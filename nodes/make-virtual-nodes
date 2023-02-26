@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+CLUSTER_NAME=kube
+BRIDGED_NET=()
+COUNT=3
+GITHUB_ID=""
+
+while (( $# )) ; do
+    case "${1}" in
+        --name|-n)
+            CLUSTER_NAME=${2}
+            shift
+            ;;
+
+        --count|-c)
+            COUNT=${2}
+            shift
+            ;;
+
+        --bridged)
+            BRIDGED_NET=( --bridged )
+            ;;
+
+        --github-id)
+            GITHUB_ID=$2
+            shift
+            ;;
+
+        *)
+            echo "ERROR: Invalid usage."
+            exit 1
+            ;;
+    esac
+
+    shift
+done
+
+if [[ ${COUNT} -lt 2 ]] ; then
+    echo "ERROR: make-cluster only supports multi-node clusters."
+    exit 1
+fi
+
+if [[ ! ${CLUSTER_NAME} =~ [a-z][-a-z0-9]* ]] ; then
+    echo "ERROR: You must specify a cluster name out of nothing but alphanumerics and hypens."
+    exit 1
+fi
+
+if [[ -z ${GITHUB_ID} ]] ; then
+    # NOTE: This could easily be made optional, but right now I'm annoyed when I forget it because that's
+    # how I always want it to operate, and I'd rather find out at invocation time rather than after all
+    # the VMs start up.
+
+    echo "ERROR: A github ID from which we  can get an SSH key for passwordless operation is required."
+    exit 1
+fi
+
+
+bridged_ip_addr() {
+    local machine=$1
+    multipass exec $machine -- ip -json addr show dev enp0s2 | jq -r ".[0].addr_info[0].local"
+}
+
+internal_ip_addr() {
+    local machine=$1
+    multipass info --format=json "${machine}" | jq -r ".info.${machine}.ipv4[0]"
+}
+
+NAMES=( )
+declare -A IP
+for (( i=1; i <= ${COUNT} ; i++ )) ; do
+    machine_name="${CLUSTER_NAME}${i}"
+    NAMES+=( "${machine_name}" )
+    multipass launch \
+        --name "${machine_name}" \
+        --cpus 2 \
+        --disk 10G \
+        --memory 2G \
+        "${BRIDGED_NET[@]}"
+
+    if [[ ${#BRIDGED_NET[@]} -gt 0 ]] ; then
+        # Sleep a couple seconds to give that bridged IP to become available.  In my testing on
+        # 2023-02-26 on my home network, even a 1 second sleep doesn't seem to be enough.
+        sleep 2
+
+        IP[$machine_name]=$(bridged_ip_addr "${machine_name}")
+    else
+        IP[$machine_name]=$(internal_ip_addr "${machine_name}")
+    fi
+
+    if [[ -n "${GITHUB_ID}" ]] ; then
+        multipass exec "${machine_name}" ssh-import-id-gh "${GITHUB_ID}"
+    fi
+
+done
+
+echo "Nodes have started.  You may want to setup a k3s cluster on them next like this:"
+echo ""
+echo -n "   $(dirname $0)/setup-nodes --login-user ubuntu --cluster-name ${CLUSTER_NAME}"
+
+# Note: we could iterate over keys in IP here, too, but then the order is undefined
+for host in "${NAMES[@]}" ; do
+    echo -n " ${host}=${IP[$host]}"
+done
+echo ""
+
+if [[ ${#BRIDGED_NET[@]} -gt 0 ]] ; then
+    echo ""
+    echo "WARNING: As configured with bridged network, your k3s cluster will break if the IP addresses"
+    echo "change -- be sure to reserve them in DHCP if you expect for this cluster to last for very long."
+fi

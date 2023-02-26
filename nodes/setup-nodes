@@ -1,0 +1,84 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+declare -a HOSTNAMES
+declare -A IP
+CLUSTER_NAME=kube
+LOGIN_USER=michael
+
+while (( $# )) ; do
+    case "${1}" in
+        --cluster-name)
+            CLUSTER_NAME=$2
+            shift
+            ;;
+        --login-user)
+            LOGIN_USER=$2
+            shift
+            ;;
+        *=*)
+            host=${1%%=*}
+            HOSTNAMES+=( "${host}" )
+            IP["${host}"]=${1##*=}
+            ;;
+        *)
+            HOSTNAMES+=( "${1}" )
+            IP["${1}"]=$(dig +short "${1}")
+            ;;
+    esac
+    shift
+done
+FIRST_HOST="${HOSTNAMES[0]}"
+declare -p HOSTNAMES IP FIRST_HOST CLUSTER_NAME
+
+SECRET=$(openssl rand -base64 30)
+
+curl -sfL https://get.k3s.io > get-k3s.sh
+chmod +x get-k3s.sh
+
+echo "Provisioning ${FIRST_HOST} at ${IP[$FIRST_HOST]} as master..."
+scp get-k3s.sh "${LOGIN_USER}@${IP[$FIRST_HOST]}:"
+ssh -tl "${LOGIN_USER}" "${IP[$FIRST_HOST]}" \
+    sudo ./get-k3s.sh server \
+            --cluster-init \
+            --token "${SECRET}" \
+            --node-name ${FIRST_HOST} \
+            --node-ip ${IP[$FIRST_HOST]} \
+            --flannel-backend=none \
+            --disable-network-policy
+
+KUBE_SERVER_URL=https://${IP[$FIRST_HOST]}:6443
+
+# First is taken care of -- now take care of the rest
+unset HOSTNAMES[0]
+for host in "${HOSTNAMES[@]}" ; do
+    echo "Provisioning ${host} at ${IP[$host]}..."
+
+    scp get-k3s.sh "${LOGIN_USER}@${IP[$host]}:"
+    ssh -tl "${LOGIN_USER}" "${IP[$host]}" \
+        sudo ./get-k3s.sh server \
+            --server "${KUBE_SERVER_URL}" \
+            --token "${SECRET}" \
+            --node-name ${host} \
+            --node-ip ${IP[$host]} \
+            --flannel-backend=none \
+            --disable-network-policy
+
+done
+
+#   curl -sfL https://get.k3s.io | K3S_TOKEN=SECRET sh -s - server --server https://192.168.64.15:6443
+
+# Options to use
+#  --node-name NAME
+#  --node-ip BACKPLANE
+#  --node-external-ip EXTERNAL
+#  --tls-san <additional hostnames>
+#  --cluster-cidr
+#  --service-cidr
+#  --default-local-storage-path <path for local-path-provisioner>
+#  --flannel-backend none (if disabling in favor of cilium)
+#  --disable-kube-proxy (if disabling in favor of cilium)
+#  --disable-network-policy (to disable k3s network policy thingy in favor of cilim)
+#  --secrets-encryption (eventually, but I think you can't bootstrap this way?)
+#  --etcd-s3-* (several options to look into that would back up my etcd to an s3-compatible store)
