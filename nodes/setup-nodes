@@ -32,6 +32,17 @@ done
 FIRST_HOST="${HOSTNAMES[0]}"
 declare -p HOSTNAMES IP FIRST_HOST CLUSTER_NAME
 
+#--------------------------------------------------------------------------------------------------------
+# Set up required host configuration via ansible on the machines
+INVENTORY=$(echo "${IP[@]}" | tr ' ' ',')
+ansible-playbook ansible/main.yaml \
+    --inventory="${INVENTORY}" \
+    --user="${LOGIN_USER}"
+
+
+#--------------------------------------------------------------------------------------------------------
+# Setup k3s cluster
+
 SECRET=$(openssl rand -base64 30)
 
 curl -sfL https://get.k3s.io > get-k3s.sh
@@ -64,8 +75,18 @@ for host in "${HOSTNAMES[@]}" ; do
             --node-ip ${IP[$host]} \
             --flannel-backend=none \
             --disable-network-policy
-
 done
+
+# Collect the kube admin cert from k3s, replacing the localhost IP with the IP of the first host
+ssh "${LOGIN_USER}@${IP[$FIRST_HOST]}" sudo cat /etc/rancher/k3s/k3s.yaml \
+    | sed 's/127\.0\.0\.1/'${IP[$FIRST_HOST]}'/' \
+    > "${HOME}/.kube/config.${CLUSTER_NAME}"
+
+export KUBECONFIG=${HOME}/.kube/config.${CLUSTER_NAME}
+
+# Install cililum CNI in the cluster
+cilium install
+cilium status --wait
 
 #   curl -sfL https://get.k3s.io | K3S_TOKEN=SECRET sh -s - server --server https://192.168.64.15:6443
 

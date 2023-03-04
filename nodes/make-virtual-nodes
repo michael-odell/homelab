@@ -6,6 +6,7 @@ CLUSTER_NAME=kube
 BRIDGED_NET=()
 COUNT=3
 GITHUB_ID=""
+SETUP_NODES=false
 
 while (( $# )) ; do
     case "${1}" in
@@ -26,6 +27,10 @@ while (( $# )) ; do
         --github-id)
             GITHUB_ID=$2
             shift
+            ;;
+
+        --setup-nodes)
+            SETUP_NODES=true
             ;;
 
         *)
@@ -79,6 +84,11 @@ for (( i=1; i <= ${COUNT} ; i++ )) ; do
         --memory 2G \
         "${BRIDGED_NET[@]}"
 
+    # Put the desired SSH auth key on the host so we can access it in the future via that key
+    if [[ -n "${GITHUB_ID}" ]] ; then
+        multipass exec "${machine_name}" ssh-import-id-gh "${GITHUB_ID}"
+    fi
+
     if [[ ${#BRIDGED_NET[@]} -gt 0 ]] ; then
         # Sleep a couple seconds to give that bridged IP to become available.  In my testing on
         # 2023-02-26 on my home network, even a 1 second sleep doesn't seem to be enough.
@@ -89,21 +99,30 @@ for (( i=1; i <= ${COUNT} ; i++ )) ; do
         IP[$machine_name]=$(internal_ip_addr "${machine_name}")
     fi
 
-    if [[ -n "${GITHUB_ID}" ]] ; then
-        multipass exec "${machine_name}" ssh-import-id-gh "${GITHUB_ID}"
-    fi
+    # Grab the ssh host key from the box itself, then add it to local .ssh/known_hosts so we can talk to
+    # it securely via ssh
+    ssh_fingerprint=$(multipass exec "${machine_name}" cat /etc/ssh/ssh_host_ed25519_key.pub)
+    echo "${IP[$machine_name]} ${ssh_fingerprint}" >> ~/.ssh/known_hosts
 
 done
 
-echo "Nodes have started.  You may want to setup a k3s cluster on them next like this:"
-echo ""
-echo -n "   $(dirname $0)/setup-nodes --login-user ubuntu --cluster-name ${CLUSTER_NAME}"
+SETUP_NODES_CMD=(
+    "$(dirname $0)/setup-nodes"
+    --login-user ubuntu
+    --cluster-name "${CLUSTER_NAME}"
+)
 
-# Note: we could iterate over keys in IP here, too, but then the order is undefined
 for host in "${NAMES[@]}" ; do
-    echo -n " ${host}=${IP[$host]}"
+    SETUP_NODES_CMD+=("${host}=${IP[$host]}")
 done
-echo ""
+
+if [[ ${SETUP_NODES} == false ]] ; then
+    echo "Nodes have started.  You may want to setup a k3s cluster on them next like this:"
+    echo ""
+    echo "   ${SETUP_NODES_CMD[@]}"
+else
+    "${SETUP_NODES_CMD[@]}"
+fi
 
 if [[ ${#BRIDGED_NET[@]} -gt 0 ]] ; then
     echo ""
