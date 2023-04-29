@@ -1,48 +1,10 @@
-- name: k3s prep
-  hosts: "all"
+- name: Update cluster configuration
+  hosts: all
+  roles:
+    - role: k3s
+
   tasks:
-    - name: install packages
-      become: true
-      apt:
-        update_cache: yes
-        cache_valid_time: 3600
-        pkg:
-          - nfs-common
-            #- aptitude
-            #- git
-            #- htop
-            #- iotop
-            #- jq
-            #- tmux
-            #- zsh
-            #- smartmontools
-            #- open-iscsi
-
-    - name: "sshd: no password authentication"
-      become: true
-      lineinfile:
-        dest: /etc/ssh/sshd_config
-        backup: yes
-        regexp: '^#?PasswordAuthentication (yes|no)$'
-        line: PasswordAuthentication no
-        state: present
-      notify:
-        - Restart sshd
-
-    - name: "systemd-networkd: Don't interefere networks that aren't yours"
-      become: true
-      community.general.ini_file:
-        path: /etc/systemd/networkd.conf
-        section: Network
-        option: "{{ item }}"
-        value: "no"
-      loop:
-        - ManageForeignRoutingPolicyRules
-        - ManageForeignRoutes
-
-  handlers:
-    - name: Restart sshd
-      ansible.builtin.systemd:
-        name: sshd
-        state: restarted
-
+    - name: Only on physical tmms
+      import_role:
+        name: tmm
+      when: "'tmm' in group_names"

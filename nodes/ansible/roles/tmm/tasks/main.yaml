@@ -1,0 +1,27 @@
+- name: Make one LVM partition out of half of the NVMe drive in each node
+  become: true
+  community.general.parted:
+    label: gpt
+    device: /dev/nvme0n1
+    number: 1
+    flags: [ lvm ]
+    state: present
+    # I went halvsies for now just to have flexibility should I desire to switch later
+    part_start: 0%
+    part_end: 50%
+
+- name: And a single kube volumegroup on top of that partition
+  become: true
+  community.general.lvg:
+    vg: kube
+    pvs: /dev/nvme0n1p1
+    state: present
+
+- name: Static IP config for host
+  become: true
+  ansible.builtin.template:
+    src: "files/20-static-ip.yaml.j2"
+    dest: "/etc/netplan/20-static-ip.yaml"
+    mode: '0644'
+    owner: root
+    group: root

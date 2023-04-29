@@ -3,7 +3,7 @@
 set -euo pipefail
 
 declare -a HOSTNAMES
-declare -A IP
+declare -A HOSTREF
 CLUSTER_NAME=kube
 LOGIN_USER=michael
 
@@ -20,24 +20,29 @@ while (( $# )) ; do
         *=*)
             host=${1%%=*}
             HOSTNAMES+=( "${host}" )
-            IP["${host}"]=${1##*=}
+            HOSTREF["${host}"]=${1##*=}
             ;;
         *)
             HOSTNAMES+=( "${1}" )
-            IP["${1}"]=$(dig +short "${1}")
+            HOSTREF["${1}"]="${1}"
             ;;
     esac
     shift
 done
 FIRST_HOST="${HOSTNAMES[0]}"
-declare -p HOSTNAMES IP FIRST_HOST CLUSTER_NAME
+declare -p HOSTNAMES HOSTREF FIRST_HOST CLUSTER_NAME
 
 #--------------------------------------------------------------------------------------------------------
-# Set up required host configuration via ansible on the machines
-INVENTORY=$(echo "${IP[@]}" | tr ' ' ',')
-ansible-playbook ansible/main.yaml \
-    --inventory="${INVENTORY}" \
-    --user="${LOGIN_USER}"
+# Generate an ansible inventory for the cluster and then "ansiblate" it
+
+INVENTORY=ansible/inventory.${CLUSTER_NAME}
+
+echo "[${CLUSTER_NAME}]" > "${INVENTORY}"
+for host in "${HOSTNAMES[@]}" ; do
+    echo "${host} ansible_host=${HOSTREF[$host]} ansible_user=${LOGIN_USER}" >> "${INVENTORY}"
+done
+
+ansible/run --cluster "${CLUSTER_NAME}"
 
 
 #--------------------------------------------------------------------------------------------------------
@@ -48,38 +53,44 @@ SECRET=$(openssl rand -base64 30)
 curl -sfL https://get.k3s.io > get-k3s.sh
 chmod +x get-k3s.sh
 
-echo "Provisioning ${FIRST_HOST} at ${IP[$FIRST_HOST]} as master..."
-scp get-k3s.sh "${LOGIN_USER}@${IP[$FIRST_HOST]}:"
-ssh -tl "${LOGIN_USER}" "${IP[$FIRST_HOST]}" \
+echo "Provisioning ${FIRST_HOST} at ${HOSTREF[$FIRST_HOST]} as master..."
+scp get-k3s.sh "${LOGIN_USER}@${HOSTREF[$FIRST_HOST]}:"
+echo ssh -tl "${LOGIN_USER}" "${HOSTREF[$FIRST_HOST]}" \
     sudo ./get-k3s.sh server \
             --cluster-init \
             --token "${SECRET}" \
             --node-name ${FIRST_HOST} \
-            --node-ip ${IP[$FIRST_HOST]} \
+            --node-ip ${HOSTREF[$FIRST_HOST]} \
             --flannel-backend=none \
             --disable-network-policy
 
-KUBE_SERVER_URL=https://${IP[$FIRST_HOST]}:6443
+echo "Waiting..."
+read
+KUBE_SERVER_URL=https://${HOSTREF[$FIRST_HOST]}:6443
+
 
 # First is taken care of -- now take care of the rest
 unset HOSTNAMES[0]
 for host in "${HOSTNAMES[@]}" ; do
-    echo "Provisioning ${host} at ${IP[$host]}..."
+    echo "Provisioning ${host} at ${HOSTREF[$host]}..."
 
-    scp get-k3s.sh "${LOGIN_USER}@${IP[$host]}:"
-    ssh -tl "${LOGIN_USER}" "${IP[$host]}" \
+    scp get-k3s.sh "${LOGIN_USER}@${HOSTREF[$host]}:"
+    echo ssh -tl "${LOGIN_USER}" "${HOSTREF[$host]}" \
         sudo ./get-k3s.sh server \
             --server "${KUBE_SERVER_URL}" \
             --token "${SECRET}" \
             --node-name ${host} \
-            --node-ip ${IP[$host]} \
+            --node-ip ${HOSTREF[$host]} \
             --flannel-backend=none \
             --disable-network-policy
+
+    echo "Waiting..."
+    read
 done
 
 # Collect the kube admin cert from k3s, replacing the localhost IP with the IP of the first host
-ssh "${LOGIN_USER}@${IP[$FIRST_HOST]}" sudo cat /etc/rancher/k3s/k3s.yaml \
-    | sed 's/127\.0\.0\.1/'${IP[$FIRST_HOST]}'/' \
+ssh "${LOGIN_USER}@${HOSTREF[$FIRST_HOST]}" sudo cat /etc/rancher/k3s/k3s.yaml \
+    | sed 's/127\.0\.0\.1/'${HOSTREF[$FIRST_HOST]}'/' \
     > "${HOME}/.kube/config.${CLUSTER_NAME}"
 
 export KUBECONFIG=${HOME}/.kube/config.${CLUSTER_NAME}

@@ -1,0 +1,5 @@
+[tmm]
+tmm0.odell.sh ansible_host=tmm0.odell.sh ansible_user=michael static_ip=10.243.243.6
+tmm1.odell.sh ansible_host=tmm1.odell.sh ansible_user=michael static_ip=10.243.243.7
+tmm2.odell.sh ansible_host=tmm2.odell.sh ansible_user=michael static_ip=10.243.243.8
+tmm3.odell.sh ansible_host=tmm3.odell.sh ansible_user=michael static_ip=10.243.243.9

@@ -1,0 +1,29 @@
+#- name: Physical TMMs
+#  hosts: tmm
+#  roles:
+#    - role: microk8s
+#      hostname: "{{ ansible_hostname }}"
+#      fqdn: "{{ ansible_fqdn }}"
+#    - role: physical-tmm
+
+- name: TMM Test machines on my laptop
+  hosts: tmm-test
+  roles:
+    - role: microk8s
+      hostname: "{{ ansible_hostname }}"
+      fqdn: "{{ ansible_fqdn }}"
+
+
+      #- name: Code editing on tmm0
+      #  hosts: tmm0.homelab
+      #  roles:
+      #    - role: code-editing
+      #      hostname: "{{ ansible_hostname }}"
+      #      fqdn: "{{ ansible_fqdn }}"
+      #
+      #- name: MaaS on tmm0
+      #  hosts: tmm0.homelab
+      #  roles:
+      #    - role: maas
+      #      maas_login_profile: homelab
+      #      maas_login_url: http://10.43.60.2:5240/MAAS

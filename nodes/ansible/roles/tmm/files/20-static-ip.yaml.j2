@@ -1,0 +1,12 @@
+network:
+  ethernets:
+    eno1:
+      dhcp4: no
+      addresses:
+      - {{ static_ip }}/24
+      nameservers:
+        addresses:
+        - 10.243.243.1
+      routes:
+        - to: default
+          via: 10.243.243.1

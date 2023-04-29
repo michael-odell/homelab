@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Must run ansible from the directory containing the script
+cd "$(dirname $0)"
+
+ANSIBLE_OPTS=( )
+CLUSTER=""
+while (( $# )) ; do
+
+    case $1 in
+
+        --cluster)
+            CLUSTER=$2
+            shift
+            ;;
+
+        *)
+            ANSIBLE_OPTS+=("$1")
+            ;;
+    esac
+
+    shift
+done
+
+if [[ -z "${CLUSTER}" ]] ; then
+    echo "Must specify a cluster -- potential names are the extension on inventory files here.  Likely tmm or alpha." >&2
+    exit 2
+fi
+
+ansible-playbook main.yaml \
+    "${ANSIBLE_OPTS[@]}" \
+    --limit "${CLUSTER}" \
+    --inventory "inventory.${CLUSTER}" \
+    -e@<(
+cat<<END
+ansible_become_pass: "$(op read op://homelab/tmm-console/password)"
+END
+)
+
