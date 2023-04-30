@@ -1,0 +1,77 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: smb-csi
+  namespace: storage
+spec:
+  interval: 24h
+  url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: smb-csi
+  namespace: storage
+spec:
+  chart:
+    spec:
+      chart: csi-driver-smb
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: smb-csi
+  interval: 24h
+  values:
+    # ref: https://github.com/kubernetes-csi/csi-driver-smb/blob/master/charts/v1.10.0/csi-driver-smb/values.yaml
+    linux:
+      kubelet: /var/lib/rancher/k3s/agent/kubelet
+
+---
+# All examples: https://github.com/kubernetes-csi/csi-driver-smb/tree/master/deploy/example
+# storageclass example: https://github.com/kubernetes-csi/csi-driver-smb/blob/master/deploy/example/storageclass-smb.yaml
+
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: smb
+provisioner: smb.csi.k8s.io
+parameters:
+  source: "//nas.local/kube"
+  # if csi.storage.k8s.io/provisioner-secret is provided, will create a sub directory
+  # with PV name under source
+  csi.storage.k8s.io/provisioner-secret-name: "smb"
+  csi.storage.k8s.io/provisioner-secret-namespace: "storage"
+  csi.storage.k8s.io/node-stage-secret-name: "smb"
+  csi.storage.k8s.io/node-stage-secret-namespace: "storage"
+volumeBindingMode: Immediate
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1001
+  - gid=1001
+  - noperm
+  - cache=strict
+  - noserverino  # required to prevent data corruption
+
+  #- mfsymlinks -- this was in the example but I believe it's just for old SMB servers to support
+  # symlinks -- my synology supports symlinks on the shares just fine without it.
+
+---
+# Chart doesn't support ServiceMonitors and prometheus metrics, but the tool does.  I started with
+# example from https://github.com/kubernetes-csi/csi-driver-smb/tree/master/deploy/example/metrics
+apiVersion: v1
+kind: Service
+metadata:
+  name: smb-csi
+  namespace: storage
+spec:
+  selector:
+    app: smb-csi
+  ports:
+    - port: 29644
+      targetPort: 29644
+  type: ClusterIP
+
+# TODO ServiceMonitor once I have prometheus up
