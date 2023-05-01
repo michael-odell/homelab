@@ -1,3 +1,5 @@
+# WARNING: This required manual creation of secret "smb" with fields username and password as the
+# credentials to hit the SMB server.
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
@@ -46,6 +48,7 @@ parameters:
   csi.storage.k8s.io/node-stage-secret-name: "smb"
   csi.storage.k8s.io/node-stage-secret-namespace: "storage"
 volumeBindingMode: Immediate
+reclaimPolicy: Retain
 mountOptions:
   - dir_mode=0777
   - file_mode=0777
