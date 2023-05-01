@@ -26,8 +26,6 @@ spec:
     # ref: https://github.com/openebs/lvm-localpv/blob/develop/deploy/helm/charts/values.yaml
     lvm-localpv:
       enabled: true
-      lvmNode:
-        kubeletDir: /var/lib/rancher/k3s/agent/kubelet
 
 ---
 apiVersion: storage.k8s.io/v1
