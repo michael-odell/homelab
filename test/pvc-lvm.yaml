@@ -1,0 +1,33 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: pvc-lvm
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: openebs-lvm
+
+---
+# The storageclass is WaitForFirstConsumer so need a pod that mounts it to get this volume to get created
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx:1.14.2
+    ports:
+    - containerPort: 80
+    volumeMounts:
+      - name: pvc-lvm
+        mountPath: /odell
+  volumes:
+    - name: pvc-lvm
+      persistentVolumeClaim:
+        claimName: pvc-lvm
+
