@@ -1,6 +1,23 @@
+---
 apiVersion: v1
 kind: Namespace
 metadata:
   labels:
     kubernetes.io/metadata.name: storage
+    secrets-injection: enabled
   name: storage
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: secrets
+  name: secrets
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: network
+    secrets-injection: enabled
+  name: network

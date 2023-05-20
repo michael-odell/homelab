@@ -36,3 +36,14 @@
   loop:
     - ManageForeignRoutingPolicyRules
     - ManageForeignRoutes
+
+- name: "systemd: Disable unnecessary services."
+  become: true
+  ansible.builtin.systemd:
+    enabled: false
+    state: stopped
+    name: "{{ item }}"
+  loop:
+    - ModemManager
+    - snapd
+

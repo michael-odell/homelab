@@ -47,6 +47,8 @@ parameters:
   csi.storage.k8s.io/node-stage-secret-namespace: "storage"
 volumeBindingMode: Immediate
 reclaimPolicy: Retain
+
+# Mount options ref: https://manpages.debian.org/stretch/cifs-utils/mount.cifs.8.en.html
 mountOptions:
   - dir_mode=0777
   - file_mode=0777
