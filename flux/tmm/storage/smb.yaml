@@ -32,6 +32,7 @@ apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
   name: smb
+  namespace: storage
 spec:
   itemPath: "vaults/homelab-tmm/items/smb"
 
