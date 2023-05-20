@@ -28,6 +28,14 @@ spec:
     # ref: https://github.com/kubernetes-csi/csi-driver-smb/blob/master/charts/v1.10.0/csi-driver-smb/values.yaml
 
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: smb
+spec:
+  itemPath: "vaults/homelab-tmm/items/smb"
+
+---
 # All examples: https://github.com/kubernetes-csi/csi-driver-smb/tree/master/deploy/example
 # storageclass example: https://github.com/kubernetes-csi/csi-driver-smb/blob/master/deploy/example/storageclass-smb.yaml
 # Driver options: https://github.com/kubernetes-csi/csi-driver-smb/blob/master/docs/driver-parameters.md
