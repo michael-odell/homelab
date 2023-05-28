@@ -48,7 +48,10 @@ spec:
           name: homekit-tcp
           protocol: TCP
         - containerPort: 21064
-          name: homekit-udp
+          name: homekit-bridge
+          protocol: UDP
+        - containerPort: 21065
+          name: homekit-accessory
           protocol: UDP
 
         readinessProbe:
@@ -133,10 +136,14 @@ spec:
     port: 5353
     targetPort: 5353
     protocol: UDP
-  - name: homekit-udp
+  - name: homekit-bridge
     port: 21064
     targetPort: 21064
-    protocol: TCP
+    protocol: UDP
+  - name: homekit-accessory
+    port: 21064
+    targetPort: 21064
+    protocol: UDP
 
   selector:
     app.kubernetes.io/instance: ha
