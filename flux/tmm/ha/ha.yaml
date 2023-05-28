@@ -134,8 +134,8 @@ spec:
     targetPort: 5353
     protocol: UDP
   - name: homekit-udp
-    port: 21063
-    targetPort: 21063
+    port: 21064
+    targetPort: 21064
     protocol: TCP
 
   selector:
