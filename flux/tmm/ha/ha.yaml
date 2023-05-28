@@ -51,7 +51,7 @@ spec:
           name: homekit-bridge
           protocol: UDP
         - containerPort: 21065
-          name: homekit-accessory
+          name: homekit-tv
           protocol: UDP
 
         readinessProbe:
@@ -140,7 +140,7 @@ spec:
     port: 21064
     targetPort: 21064
     protocol: UDP
-  - name: homekit-accessory
+  - name: homekit-tv
     port: 21065
     targetPort: 21065
     protocol: UDP
