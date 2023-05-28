@@ -24,7 +24,8 @@ spec:
         app.kubernetes.io/instance: ha
         app.kubernetes.io/name: ha
     spec:
-      automountServiceAccountToken: true
+      automountServiceAccountToken: false
+      hostNetwork: true
       containers:
       - env:
         - name: TZ
