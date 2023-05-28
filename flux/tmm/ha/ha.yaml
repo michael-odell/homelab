@@ -141,8 +141,8 @@ spec:
     targetPort: 21064
     protocol: UDP
   - name: homekit-accessory
-    port: 21064
-    targetPort: 21064
+    port: 21065
+    targetPort: 21065
     protocol: UDP
 
   selector:
