@@ -1,0 +1,190 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: ha
+  labels:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+    app.kubernetes.io/version: 2022.5.4
+  name: ha
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: ha
+      app.kubernetes.io/name: ha
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      namespace: ha
+      labels:
+        app.kubernetes.io/instance: ha
+        app.kubernetes.io/name: ha
+    spec:
+      automountServiceAccountToken: true
+      containers:
+      - env:
+        - name: TZ
+          value: America/Denver
+        image: ghcr.io/home-assistant/home-assistant:2022.5.4
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          tcpSocket:
+            port: 8123
+          timeoutSeconds: 1
+        name: ha
+        ports:
+        - containerPort: 8123
+          name: http
+          protocol: TCP
+        - containerPort: 5353
+          name: homekit-tcp
+          protocol: TCP
+        - containerPort: 21063
+          name: homekit-udp
+          protocol: UDP
+
+        readinessProbe:
+          failureThreshold: 3
+          initialDelaySeconds: 0
+          periodSeconds: 10
+          tcpSocket:
+            port: 8123
+          timeoutSeconds: 1
+
+        securityContext:
+          privileged: null
+
+        startupProbe:
+          failureThreshold: 30
+          initialDelaySeconds: 0
+          periodSeconds: 5
+          tcpSocket:
+            port: 8123
+          timeoutSeconds: 1
+
+        volumeMounts:
+        - mountPath: /config
+          name: config
+
+      dnsPolicy: ClusterFirst
+      enableServiceLinks: true
+      serviceAccountName: default
+
+      volumes:
+      - name: config
+        persistentVolumeClaim:
+          claimName: ha-config
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: ha
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns
+    external-dns.alpha.kubernetes.io/target: k8s.odell.sh
+    nginx.org/websocket-services: ha
+  labels:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+    app.kubernetes.io/version: 2022.5.4
+  name: ha
+spec:
+  ingressClassName: public
+  rules:
+  - host: ha.odell.sh
+    http:
+      paths:
+      - backend:
+          service:
+            name: ha
+            port:
+              number: 8123
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - ha.odell.sh
+    secretName: ha-tls
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  namespace: ha
+  labels:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+    app.kubernetes.io/version: 2022.5.4
+  name: ha
+spec:
+  groups:
+  - name: ha
+    rules:
+    - alert: HomeAssistantAbsent
+      annotations:
+        description: Home Assistant has disappeared from Prometheus service discovery.
+        summary: Home Assistant is down.
+      expr: |
+        absent(up{job=~".*ha.*"} == 1)
+      for: 5m
+      labels:
+        severity: critical
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  namespace: ha
+  labels:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+    app.kubernetes.io/version: 2022.5.4
+  name: ha
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: token
+      name: metrics-bearer-token
+    interval: 1m
+    path: /api/prometheus
+    port: http
+    scrapeTimeout: 30s
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: ha
+      app.kubernetes.io/name: ha
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ha
+  labels:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+    app.kubernetes.io/version: 2022.5.4
+  name: ha
+spec:
+  ports:
+  - name: http
+    port: 8123
+    protocol: TCP
+    targetPort: http
+  - name: homekit-tcp
+    port: 5353
+    targetPort: 5353
+    protocol: UDP
+  - name: homekit-udp
+    port: 21063
+    targetPort: 21063
+    protocol: TCP
+
+  selector:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+  type: ClusterIP
