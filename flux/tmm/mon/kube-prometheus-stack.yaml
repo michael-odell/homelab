@@ -77,9 +77,9 @@ spec:
 
 
       admin:
-        existingSecret: "grafana-pass"
-        userKey: user
-        passwordKey: pass
+        existingSecret: "grafana-login"
+        userKey: username
+        passwordKey: password
 
       # Use when persistent volume is enabled
       deploymentStrategy:
