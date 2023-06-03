@@ -76,10 +76,10 @@ spec:
           secretName: mon-tls
 
 
-      admin:
-        existingSecret: "grafana-login"
-        userKey: username
-        passwordKey: password
+            #admin:
+            #  existingSecret: "grafana-login"
+            #  userKey: username
+            #  passwordKey: password
 
       # Use when persistent volume is enabled
       deploymentStrategy:
