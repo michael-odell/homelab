@@ -29,7 +29,7 @@ spec:
         annotations:
           cert-manager.io/cluster-issuer: letsencrypt-dns
         enabled: true
-        ingressClassName: public
+        ingressClassName: traefik
         hosts:
         - mon.odell.sh
         paths:
@@ -64,7 +64,7 @@ spec:
         annotations:
           cert-manager.io/cluster-issuer: letsencrypt-dns
         enabled: true
-        ingressClassName: public
+        ingressClassName: traefik
         pathType: Prefix
         hosts:
         - mon.odell.sh
@@ -120,7 +120,7 @@ spec:
         annotations:
           cert-manager.io/cluster-issuer: letsencrypt-dns
         enabled: true
-        ingressClassName: public
+        ingressClassName: traefik
         hosts:
         - mon.odell.sh
         paths:
