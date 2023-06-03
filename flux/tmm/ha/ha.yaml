@@ -99,7 +99,7 @@ metadata:
     app.kubernetes.io/version: 2023.5.4
   name: ha
 spec:
-  ingressClassName: public
+  ingressClassName: traefik
   rules:
   - host: ha.odell.sh
     http:

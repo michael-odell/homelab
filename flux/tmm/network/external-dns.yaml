@@ -39,6 +39,3 @@ spec:
             name: aws-certbot
             key: secret_key
 
-
-
-
