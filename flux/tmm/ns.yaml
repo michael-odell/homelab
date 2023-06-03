@@ -29,3 +29,11 @@ metadata:
     kubernetes.io/metadata.name: ha
     secrets-injection: enabled
   name: ha
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: mon
+    secrets-injection: enabled
+  name: mon
