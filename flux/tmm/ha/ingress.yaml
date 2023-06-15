@@ -1,0 +1,30 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: ha
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-dns
+    nginx.org/websocket-services: ha
+  labels:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+    app.kubernetes.io/version: 2023.5.4
+  name: ha
+spec:
+  ingressClassName: traefik
+  rules:
+  - host: ha.odell.sh
+    http:
+      paths:
+      - backend:
+          service:
+            name: ha
+            port:
+              number: 8123
+        path: /
+        pathType: Prefix
+  tls:
+  - hosts:
+    - ha.odell.sh
+    secretName: ha-tls

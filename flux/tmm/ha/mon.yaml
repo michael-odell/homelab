@@ -1,0 +1,24 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  namespace: ha
+  labels:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+    app.kubernetes.io/version: 2023.5.4
+  name: ha
+spec:
+  endpoints:
+  - bearerTokenSecret:
+      key: token
+      name: metrics-bearer-token
+    interval: 1m
+    path: /api/prometheus
+    port: http
+    scrapeTimeout: 30s
+  selector:
+    matchLabels:
+      app.kubernetes.io/instance: ha
+      app.kubernetes.io/name: ha
+

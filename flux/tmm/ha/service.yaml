@@ -1,0 +1,33 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: ha
+  labels:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+    app.kubernetes.io/version: 2023.5.4
+  name: ha
+spec:
+  ports:
+  - name: http
+    port: 8123
+    protocol: TCP
+    targetPort: http
+  - name: homekit-tcp
+    port: 5353
+    targetPort: 5353
+    protocol: UDP
+  - name: homekit-bridge
+    port: 21064
+    targetPort: 21064
+    protocol: UDP
+  - name: homekit-tv
+    port: 21065
+    targetPort: 21065
+    protocol: UDP
+
+  selector:
+    app.kubernetes.io/instance: ha
+    app.kubernetes.io/name: ha
+  type: ClusterIP

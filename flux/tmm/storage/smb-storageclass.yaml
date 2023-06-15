@@ -1,0 +1,33 @@
+# All examples: https://github.com/kubernetes-csi/csi-driver-smb/tree/master/deploy/example
+# storageclass example: https://github.com/kubernetes-csi/csi-driver-smb/blob/master/deploy/example/storageclass-smb.yaml
+# Driver options: https://github.com/kubernetes-csi/csi-driver-smb/blob/master/docs/driver-parameters.md
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: smb
+provisioner: smb.csi.k8s.io
+parameters:
+  source: "//10.243.243.169/kube"
+  # if csi.storage.k8s.io/provisioner-secret is provided, will create a sub directory
+  # with PV name under source
+  csi.storage.k8s.io/provisioner-secret-name: "smb"
+  csi.storage.k8s.io/provisioner-secret-namespace: "storage"
+  csi.storage.k8s.io/node-stage-secret-name: "smb"
+  csi.storage.k8s.io/node-stage-secret-namespace: "storage"
+volumeBindingMode: Immediate
+reclaimPolicy: Retain
+
+# Mount options ref: https://manpages.debian.org/stretch/cifs-utils/mount.cifs.8.en.html
+mountOptions:
+  - dir_mode=0777
+  - file_mode=0777
+  - uid=1001
+  - gid=1001
+  - noperm
+  - cache=strict
+  - noserverino  # required to prevent data corruption
+
+  #- mfsymlinks -- this was in the example but I believe it's just for old SMB servers to support
+  # symlinks -- my synology supports symlinks on the shares just fine without it.
+
