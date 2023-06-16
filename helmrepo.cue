@@ -11,9 +11,8 @@ helmRepository: [NAME=_]: {
 	url: string & =~"^https?://.*[^/]$"
 }
 
-helmrepo: [NAME=_]: {
+flux: helmrepo: [NAME=_]: {
 	#FluxHelmRepo
-
 	metadata: name: NAME
 }
 
