@@ -1,5 +1,10 @@
 package homelab
 
+helmRepository: openebs: {
+	name: "openebs"
+	url:  "https://openebs.github.io/charts"
+}
+
 helmrepo: openebs: {
 	metadata: {
 		name:      "openebs"

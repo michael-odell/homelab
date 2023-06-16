@@ -1,5 +1,10 @@
 package homelab
 
+helmRepository: "external-dns": {
+	name: "external-dns"
+	url:  "https://kubernetes-sigs.github.io/external-dns"
+}
+
 helmrepo: "external-dns": {
 	metadata: {
 		name:      "external-dns"

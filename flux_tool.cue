@@ -5,6 +5,7 @@ import (
 	"encoding/yaml"
 )
 
+let _FLUX = flux
 command: flux: {
 
 	fluxOutputDirectory: "tmp"
@@ -12,7 +13,7 @@ command: flux: {
 		path: fluxOutputDirectory
 	}
 
-	for h in helmrepo {
+	for h in _FLUX.helmrepo {
 		let name = h.metadata.name
 		"\(name)": file.Create & {
 			$after:   mkdir

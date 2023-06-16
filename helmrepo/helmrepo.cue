@@ -1,9 +1,33 @@
 package homelab
 
+helmRepository: [NAME=_]: {
+	#HelmRepository
+}
+
+#HelmRepository: {
+	name: string & =~"[-a-z0-9]+"
+
+	// URLs for helm repos shouldn't end in slash
+	url: string & =~"^https?://.*[^/]$"
+}
+
 helmrepo: [NAME=_]: {
 	#FluxHelmRepo
 
 	metadata: name: NAME
+}
+
+flux: helmrepo: {
+	for hr in helmRepository {
+		"\(hr.name)": {
+			#FluxHelmRepo
+			metadata: {
+				name:      hr.name
+				namespace: "flux-system"
+			}
+			spec: url: hr.url
+		}
+	}
 }
 
 #FluxHelmRepo: {
