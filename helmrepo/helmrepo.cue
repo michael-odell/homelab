@@ -19,6 +19,8 @@ helmrepo: [NAME=_]: {
 	spec: {
 		// TODO probably move them all to same interval, too
 		interval: string | *"12h"
-		url:      string
+
+		// URLs for helm repos shouldn't end in slash
+		url: string & =~"^https?://.*[^/]$"
 	}
 }

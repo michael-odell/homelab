@@ -6,6 +6,6 @@ helmrepo: "external-dns": {
 		namespace: "network"
 	}
 	spec: {
-		url: "https://kubernetes-sigs.github.io/external-dns/"
+		url: "https://kubernetes-sigs.github.io/external-dns"
 	}
 }
