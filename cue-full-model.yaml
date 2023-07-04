@@ -1,0 +1,685 @@
+cluster:
+  alpha:
+    fqdn: alpha.odell.sh
+    kubeType: k3s
+    name: alpha
+    nodeType: physical
+    onePasswordVault: homelab-alpha
+  tmm:
+    fqdn: odell.sh
+    kubeType: k3s
+    name: tmm
+    nodeType: multipass
+    onePasswordVault: homelab-tmm
+helmApp:
+  cert-manager:
+    chartName: cert-manager
+    flux:
+      helmRelease:
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: cert-manager
+          namespace: network
+        spec:
+          chart:
+            spec:
+              chart: cert-manager
+              reconcileStrategy: ChartVersion
+              sourceRef:
+                kind: HelmRepository
+                name: cert-manager
+                namespace: flux-system
+          interval: 24h
+          values:
+            installCRDs: true
+            prometheus:
+              servicemonitor:
+                enabled: false
+      helmRepo:
+        apiVersion: source.toolkit.fluxcd.io/v1beta2
+        kind: HelmRepository
+        metadata:
+          name: cert-manager
+          namespace: flux-system
+        spec:
+          interval: 12h
+          url: https://charts.jetstack.io
+    helmRepository:
+      name: cert-manager
+      url: https://charts.jetstack.io
+    namespace: network
+    releaseName: cert-manager
+    values:
+      installCRDs: true
+      prometheus:
+        servicemonitor:
+          enabled: false
+  connect:
+    chartName: connect
+    flux:
+      helmRelease:
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: connect
+          namespace: secrets
+        spec:
+          chart:
+            spec:
+              chart: connect
+              reconcileStrategy: ChartVersion
+              sourceRef:
+                kind: HelmRepository
+                name: onepassword
+                namespace: flux-system
+          interval: 24h
+          values:
+            connect:
+              create: true
+              credentialsKey: json
+              credentialsName: opcreds
+              serviceType: ClusterIP
+            operator:
+              autoRestart: true
+              create: true
+              pollingInterval: 600
+              token:
+                key: token
+                name: connect
+      helmRepo:
+        apiVersion: source.toolkit.fluxcd.io/v1beta2
+        kind: HelmRepository
+        metadata:
+          name: connect
+          namespace: flux-system
+        spec:
+          interval: 12h
+          url: https://1password.github.io/connect-helm-charts
+    helmRepository:
+      name: onepassword
+      url: https://1password.github.io/connect-helm-charts
+    namespace: secrets
+    releaseName: connect
+    values:
+      connect:
+        create: true
+        credentialsKey: json
+        credentialsName: opcreds
+        serviceType: ClusterIP
+      operator:
+        autoRestart: true
+        create: true
+        pollingInterval: 600
+        token:
+          key: token
+          name: connect
+  external-dns:
+    chartName: external-dns
+    flux:
+      helmRelease:
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: external-dns
+          namespace: network
+        spec:
+          chart:
+            spec:
+              chart: external-dns
+              reconcileStrategy: ChartVersion
+              sourceRef:
+                kind: HelmRepository
+                name: external-dns
+                namespace: flux-system
+          interval: 24h
+          values:
+            env:
+              - name: AWS_ACCESS_KEY_ID
+                valueFrom:
+                  secretKeyRef:
+                    key: access_key
+                    name: aws-certbot
+              - name: AWS_SECRET_ACCESS_KEY
+                valueFrom:
+                  secretKeyRef:
+                    key: secret_key
+                    name: aws-certbot
+            policy: sync
+            provider: aws
+            txtOwnerId: homelab
+            txtPrefix: externaldns-
+      helmRepo:
+        apiVersion: source.toolkit.fluxcd.io/v1beta2
+        kind: HelmRepository
+        metadata:
+          name: external-dns
+          namespace: flux-system
+        spec:
+          interval: 12h
+          url: https://kubernetes-sigs.github.io/external-dns
+    helmRepository:
+      name: external-dns
+      url: https://kubernetes-sigs.github.io/external-dns
+    namespace: network
+    releaseName: external-dns
+    values:
+      env:
+        - name: AWS_ACCESS_KEY_ID
+          valueFrom:
+            secretKeyRef:
+              key: access_key
+              name: aws-certbot
+        - name: AWS_SECRET_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              key: secret_key
+              name: aws-certbot
+      policy: sync
+      provider: aws
+      txtOwnerId: homelab
+      txtPrefix: externaldns-
+  loki:
+    chartName: loki
+    flux:
+      helmRelease:
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: loki
+          namespace: mon
+        spec:
+          chart:
+            spec:
+              chart: loki
+              reconcileStrategy: ChartVersion
+              sourceRef:
+                kind: HelmRepository
+                name: grafana
+                namespace: flux-system
+          interval: 24h
+          values:
+            grafana:
+              enabled: false
+            isDefault: false
+            loki:
+              persistence:
+                accessModes:
+                  - ReadWriteOnce
+                enabled: true
+                size: 50Gi
+                storageClassName: openebs-lvm
+              podManagementPolicy: Parallel
+              replicas: 2
+              serviceMonitor:
+                enabled: true
+      helmRepo:
+        apiVersion: source.toolkit.fluxcd.io/v1beta2
+        kind: HelmRepository
+        metadata:
+          name: loki
+          namespace: flux-system
+        spec:
+          interval: 12h
+          url: https://grafana.github.io/helm-charts
+    helmRepository:
+      name: grafana
+      url: https://grafana.github.io/helm-charts
+    namespace: mon
+    releaseName: loki
+    values:
+      grafana:
+        enabled: false
+      isDefault: false
+      loki:
+        persistence:
+          accessModes:
+            - ReadWriteOnce
+          enabled: true
+          size: 50Gi
+          storageClassName: openebs-lvm
+        podManagementPolicy: Parallel
+        replicas: 2
+        serviceMonitor:
+          enabled: true
+  mon:
+    chartName: mon
+    flux:
+      helmRelease:
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: mon
+          namespace: mon
+        spec:
+          chart:
+            spec:
+              chart: mon
+              reconcileStrategy: ChartVersion
+              sourceRef:
+                kind: HelmRepository
+                name: prometheus-community
+                namespace: flux-system
+          interval: 24h
+          values:
+            alertmanager:
+              alertmanagerSpec:
+                externalUrl: http://mon.odell.sh/alertmanager/
+                routePrefix: /alertmanager/
+              ingress:
+                annotations:
+                  cert-manager.io/cluster-issuer: letsencrypt-dns
+                enabled: true
+                hosts:
+                  - mon.odell.sh
+                ingressClassName: traefik
+                paths:
+                  - /alertmanager
+                tls:
+                  - hosts:
+                      - mon.odell.sh
+                    secretName: mon-tls
+            defaultRules:
+              disabled:
+                KubeAggregatedAPIDown: true
+                Watchdog: true
+              rules:
+                etcd: false
+                kubeScheduler: false
+            grafana:
+              deploymentStrategy:
+                type: Recreate
+              enabled: true
+              grafana.ini:
+                analytics:
+                  check_for_updates: false
+                server:
+                  domain: mon.odell.sh
+                  enable_gzip: true
+                  root_url: '%(protocol)s://%(domain)s:%(http_port)s/grafana/'
+                  serve_from_sub_path: true
+              ingress:
+                annotations:
+                  cert-manager.io/cluster-issuer: letsencrypt-dns
+                enabled: true
+                hosts:
+                  - mon.odell.sh
+                ingressClassName: traefik
+                pathType: Prefix
+                paths:
+                  - /grafana
+                tls:
+                  - hosts:
+                      - mon.odell.sh
+                    secretName: mon-tls
+              persistence:
+                accessModes:
+                  - ReadWriteOnce
+                enabled: true
+                size: 10Gi
+                storageClassName: smb
+                type: pvc
+              serviceMonitor:
+                enabled: true
+              sidecar:
+                dashboards:
+                  provider:
+                    allowUiUpdates: true
+                  searchNamespace: ALL
+            prometheus:
+              additionalScrapeConfigs: []
+              ingress:
+                annotations:
+                  cert-manager.io/cluster-issuer: letsencrypt-dns
+                enabled: true
+                hosts:
+                  - mon.odell.sh
+                ingressClassName: traefik
+                paths:
+                  - /prometheus
+                tls:
+                  - hosts:
+                      - mon.odell.sh
+                    secretName: mon-tls
+              prometheusSpec:
+                externalUrl: http://mon.odell.sh/prometheus/
+                podMonitorSelectorNilUsesHelmValues: false
+                replicas: 2
+                resources:
+                  limits:
+                    cpu: '2'
+                    memory: 4Gi
+                  requests:
+                    cpu: 500m
+                    memory: 2300Mi
+                retentionSize: 90GB
+                routePrefix: /prometheus/
+                ruleSelectorNilUsesHelmValues: false
+                serviceMonitorSelectorNilUsesHelmValues: false
+                storageSpec:
+                  volumeClaimTemplate:
+                    spec:
+                      accessModes:
+                        - ReadWriteOnce
+                      resources:
+                        requests:
+                          storage: 100Gi
+                      storageClassName: openebs-lvm
+                walCompression: true
+            prometheus-node-exporter:
+              prometheus:
+                monitor:
+                  enabled: true
+      helmRepo:
+        apiVersion: source.toolkit.fluxcd.io/v1beta2
+        kind: HelmRepository
+        metadata:
+          name: mon
+          namespace: flux-system
+        spec:
+          interval: 12h
+          url: https://prometheus-community.github.io/helm-charts
+    helmRepository:
+      name: prometheus-community
+      url: https://prometheus-community.github.io/helm-charts
+    namespace: mon
+    releaseName: mon
+    values:
+      alertmanager:
+        alertmanagerSpec:
+          externalUrl: http://mon.odell.sh/alertmanager/
+          routePrefix: /alertmanager/
+        ingress:
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-dns
+          enabled: true
+          hosts:
+            - mon.odell.sh
+          ingressClassName: traefik
+          paths:
+            - /alertmanager
+          tls:
+            - hosts:
+                - mon.odell.sh
+              secretName: mon-tls
+      defaultRules:
+        disabled:
+          KubeAggregatedAPIDown: true
+          Watchdog: true
+        rules:
+          etcd: false
+          kubeScheduler: false
+      grafana:
+        deploymentStrategy:
+          type: Recreate
+        enabled: true
+        grafana.ini:
+          analytics:
+            check_for_updates: false
+          server:
+            domain: mon.odell.sh
+            enable_gzip: true
+            root_url: '%(protocol)s://%(domain)s:%(http_port)s/grafana/'
+            serve_from_sub_path: true
+        ingress:
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-dns
+          enabled: true
+          hosts:
+            - mon.odell.sh
+          ingressClassName: traefik
+          pathType: Prefix
+          paths:
+            - /grafana
+          tls:
+            - hosts:
+                - mon.odell.sh
+              secretName: mon-tls
+        persistence:
+          accessModes:
+            - ReadWriteOnce
+          enabled: true
+          size: 10Gi
+          storageClassName: smb
+          type: pvc
+        serviceMonitor:
+          enabled: true
+        sidecar:
+          dashboards:
+            provider:
+              allowUiUpdates: true
+            searchNamespace: ALL
+      prometheus:
+        additionalScrapeConfigs: []
+        ingress:
+          annotations:
+            cert-manager.io/cluster-issuer: letsencrypt-dns
+          enabled: true
+          hosts:
+            - mon.odell.sh
+          ingressClassName: traefik
+          paths:
+            - /prometheus
+          tls:
+            - hosts:
+                - mon.odell.sh
+              secretName: mon-tls
+        prometheusSpec:
+          externalUrl: http://mon.odell.sh/prometheus/
+          podMonitorSelectorNilUsesHelmValues: false
+          replicas: 2
+          resources:
+            limits:
+              cpu: '2'
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 2300Mi
+          retentionSize: 90GB
+          routePrefix: /prometheus/
+          ruleSelectorNilUsesHelmValues: false
+          serviceMonitorSelectorNilUsesHelmValues: false
+          storageSpec:
+            volumeClaimTemplate:
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                resources:
+                  requests:
+                    storage: 100Gi
+                storageClassName: openebs-lvm
+          walCompression: true
+      prometheus-node-exporter:
+        prometheus:
+          monitor:
+            enabled: true
+  openebs:
+    chartName: openebs
+    flux:
+      helmRelease:
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: openebs
+          namespace: storage
+        spec:
+          chart:
+            spec:
+              chart: openebs
+              reconcileStrategy: ChartVersion
+              sourceRef:
+                kind: HelmRepository
+                name: openebs
+                namespace: flux-system
+          interval: 24h
+          values:
+            lvm-localpv:
+              enabled: true
+      helmRepo:
+        apiVersion: source.toolkit.fluxcd.io/v1beta2
+        kind: HelmRepository
+        metadata:
+          name: openebs
+          namespace: flux-system
+        spec:
+          interval: 12h
+          url: https://openebs.github.io/charts
+    helmRepository:
+      name: openebs
+      url: https://openebs.github.io/charts
+    namespace: storage
+    releaseName: openebs
+    values:
+      lvm-localpv:
+        enabled: true
+  smb-csi:
+    chartName: smb-csi
+    flux:
+      helmRelease:
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: smb-csi
+          namespace: storage
+        spec:
+          chart:
+            spec:
+              chart: smb-csi
+              reconcileStrategy: ChartVersion
+              sourceRef:
+                kind: HelmRepository
+                name: smb-csi
+                namespace: flux-system
+          interval: 24h
+          values: {}
+      helmRepo:
+        apiVersion: source.toolkit.fluxcd.io/v1beta2
+        kind: HelmRepository
+        metadata:
+          name: smb-csi
+          namespace: flux-system
+        spec:
+          interval: 12h
+          url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
+    helmRepository:
+      name: smb-csi
+      url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
+    namespace: storage
+    releaseName: smb-csi
+    values: {}
+  timescale:
+    chartName: timescale
+    flux:
+      helmRelease:
+        apiVersion: helm.toolkit.fluxcd.io/v2beta1
+        kind: HelmRelease
+        metadata:
+          name: timescale
+          namespace: data
+        spec:
+          chart:
+            spec:
+              chart: timescale
+              reconcileStrategy: ChartVersion
+              sourceRef:
+                kind: HelmRepository
+                name: timescale
+                namespace: flux-system
+          interval: 24h
+          values:
+            persistentVolumes:
+              data:
+                size: 100Gi
+                storageClass: openebs-lvm
+              wal:
+                size: 30Gi
+                storageClass: openebs-lvm
+            resources:
+              requests:
+                cpu: '1'
+                memory: 2Gi
+            timescaledbTune:
+              args:
+                cpus: '1'
+                memory: 2GB
+      helmRepo:
+        apiVersion: source.toolkit.fluxcd.io/v1beta2
+        kind: HelmRepository
+        metadata:
+          name: timescale
+          namespace: flux-system
+        spec:
+          interval: 12h
+          url: https://charts.timescale.com
+    helmRepository:
+      name: timescale
+      url: https://charts.timescale.com
+    namespace: data
+    releaseName: timescale
+    values:
+      persistentVolumes:
+        data:
+          size: 100Gi
+          storageClass: openebs-lvm
+        wal:
+          size: 30Gi
+          storageClass: openebs-lvm
+      resources:
+        requests:
+          cpu: '1'
+          memory: 2Gi
+      timescaledbTune:
+        args:
+          cpus: '1'
+          memory: 2GB
+helmRepository: {}
+kubernetes:
+  namespace:
+    data:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          kubernetes.io/metadata.name: data
+          secrets-injection: enabled
+        name: data
+    ha:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          kubernetes.io/metadata.name: ha
+          secrets-injection: enabled
+        name: ha
+    mon:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          kubernetes.io/metadata.name: mon
+          secrets-injection: enabled
+        name: mon
+    network:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          kubernetes.io/metadata.name: network
+          secrets-injection: enabled
+        name: network
+    secrets:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          kubernetes.io/metadata.name: secrets
+          secrets-injection: enabled
+        name: secrets
+    storage:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        labels:
+          kubernetes.io/metadata.name: storage
+          secrets-injection: enabled
+        name: storage

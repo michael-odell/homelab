@@ -4,6 +4,7 @@ set -euo pipefail
 
 cd "$(dirname $0)"
 (cd helm-app ; cue export ) | jq -S . > cue-full-model.json
+(cd helm-app ; cue export --out=yaml) | yq -Sy . > cue-full-model.yaml
 
 rm -r tmp
 cue flux ./...
