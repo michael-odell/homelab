@@ -3,7 +3,7 @@
 set -euo pipefail
 
 cd "$(dirname $0)"
-cue export ./... | jq -S . > cue-full-model.json
+(cd helm-app ; cue export ) | jq -S . > cue-full-model.json
 
 rm -r tmp
 cue flux ./...
