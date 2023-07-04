@@ -14,7 +14,14 @@ helmApp: [NAME=_]: APP={
 			spec: {
 				chart: spec: {
 					chart: APP.chartName
-					sourceRef: name: APP.helmRepository.name
+					sourceRef: {
+						name: APP.helmRepository.name
+
+						// All HelmRepository objects are in flux-system just to keep them contained and
+						// in hopes that maybe occasionally you'll get one single repo to support
+						// multiple apps
+						namespace: "flux-system"
+					}
 				}
 
 				values: APP.values

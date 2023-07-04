@@ -33,7 +33,8 @@
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "cert-manager"
+                  "name": "cert-manager",
+                  "namespace": "flux-system"
                 }
               }
             },
@@ -93,7 +94,8 @@
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "onepassword"
+                  "name": "onepassword",
+                  "namespace": "flux-system"
                 }
               }
             },
@@ -171,7 +173,8 @@
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "external-dns"
+                  "name": "external-dns",
+                  "namespace": "flux-system"
                 }
               }
             },
@@ -267,7 +270,8 @@
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "grafana"
+                  "name": "grafana",
+                  "namespace": "flux-system"
                 }
               }
             },
@@ -353,7 +357,8 @@
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "prometheus-community"
+                  "name": "prometheus-community",
+                  "namespace": "flux-system"
                 }
               }
             },
@@ -725,7 +730,8 @@
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "openebs"
+                  "name": "openebs",
+                  "namespace": "flux-system"
                 }
               }
             },
@@ -779,7 +785,8 @@
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "smb-csi"
+                  "name": "smb-csi",
+                  "namespace": "flux-system"
                 }
               }
             },
@@ -825,7 +832,8 @@
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "timescale"
+                  "name": "timescale",
+                  "namespace": "flux-system"
                 }
               }
             },
