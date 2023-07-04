@@ -12,23 +12,22 @@ spec:
         kind: HelmRepository
         name: timescale
   interval: 24h
-  values: {}
-values:
-  persistentVolumes:
-    data:
-      size: 100Gi
-      storageClass: openebs-lvm
-    wal:
-      size: 30Gi
-      storageClass: openebs-lvm
-  resources:
-    requests:
-      cpu: "1"
-      memory: 2Gi
-  timescaledbTune:
-    args:
-      cpus: "1"
-      memory: 2GB
+  values:
+    persistentVolumes:
+      data:
+        size: 100Gi
+        storageClass: openebs-lvm
+      wal:
+        size: 30Gi
+        storageClass: openebs-lvm
+    resources:
+      requests:
+        cpu: "1"
+        memory: 2Gi
+    timescaledbTune:
+      args:
+        cpus: "1"
+        memory: 2GB
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository

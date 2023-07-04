@@ -12,10 +12,9 @@ spec:
         kind: HelmRepository
         name: openebs
   interval: 24h
-  values: {}
-values:
-  lvm-localpv:
-    enabled: true
+  values:
+    lvm-localpv:
+      enabled: true
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository

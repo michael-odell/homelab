@@ -12,116 +12,115 @@ spec:
         kind: HelmRepository
         name: prometheus-community
   interval: 24h
-  values: {}
-values:
-  alertmanager:
-    ingress:
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns
-      enabled: true
-      ingressClassName: traefik
-      hosts:
-        - mon.odell.sh
-      paths:
-        - /alertmanager
-      tls:
-        - hosts:
-            - mon.odell.sh
-          secretName: mon-tls
-    alertmanagerSpec:
-      externalUrl: http://mon.odell.sh/alertmanager/
-      routePrefix: /alertmanager/
-  defaultRules:
-    rules:
-      kubeScheduler: false
-      etcd: false
-    disabled:
-      Watchdog: true
-      KubeAggregatedAPIDown: true
-  grafana:
-    enabled: true
-    serviceMonitor:
-      enabled: true
-    ingress:
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns
-      enabled: true
-      ingressClassName: traefik
-      pathType: Prefix
-      hosts:
-        - mon.odell.sh
-      paths:
-        - /grafana
-      tls:
-        - hosts:
-            - mon.odell.sh
-          secretName: mon-tls
-    deploymentStrategy:
-      type: Recreate
-    persistence:
-      enabled: true
-      type: pvc
-      storageClassName: smb
-      accessModes:
-        - ReadWriteOnce
-      size: 10Gi
-    grafana.ini:
-      server:
-        domain: mon.odell.sh
-        root_url: '%(protocol)s://%(domain)s:%(http_port)s/grafana/'
-        serve_from_sub_path: true
-        enable_gzip: true
-      analytics:
-        check_for_updates: false
-    sidecar:
-      dashboards:
-        searchNamespace: ALL
-        provider:
-          allowUiUpdates: true
-  prometheus-node-exporter:
-    prometheus:
-      monitor:
+  values:
+    alertmanager:
+      ingress:
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-dns
         enabled: true
-  prometheus:
-    ingress:
-      annotations:
-        cert-manager.io/cluster-issuer: letsencrypt-dns
+        ingressClassName: traefik
+        hosts:
+          - mon.odell.sh
+        paths:
+          - /alertmanager
+        tls:
+          - hosts:
+              - mon.odell.sh
+            secretName: mon-tls
+      alertmanagerSpec:
+        externalUrl: http://mon.odell.sh/alertmanager/
+        routePrefix: /alertmanager/
+    defaultRules:
+      rules:
+        kubeScheduler: false
+        etcd: false
+      disabled:
+        Watchdog: true
+        KubeAggregatedAPIDown: true
+    grafana:
       enabled: true
-      ingressClassName: traefik
-      hosts:
-        - mon.odell.sh
-      paths:
-        - /prometheus
-      tls:
-        - hosts:
-            - mon.odell.sh
-          secretName: mon-tls
-    prometheusSpec:
-      podMonitorSelectorNilUsesHelmValues: false
-      serviceMonitorSelectorNilUsesHelmValues: false
-      ruleSelectorNilUsesHelmValues: false
-      replicas: 2
-      resources:
-        requests:
-          cpu: 500m
-          memory: 2300Mi
-        limits:
-          cpu: "2"
-          memory: 4Gi
-      externalUrl: http://mon.odell.sh/prometheus/
-      routePrefix: /prometheus/
-      retentionSize: 90GB
-      walCompression: true
-      storageSpec:
-        volumeClaimTemplate:
-          spec:
-            accessModes:
-              - ReadWriteOnce
-            resources:
-              requests:
-                storage: 100Gi
-            storageClassName: openebs-lvm
-    additionalScrapeConfigs: []
+      serviceMonitor:
+        enabled: true
+      ingress:
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-dns
+        enabled: true
+        ingressClassName: traefik
+        pathType: Prefix
+        hosts:
+          - mon.odell.sh
+        paths:
+          - /grafana
+        tls:
+          - hosts:
+              - mon.odell.sh
+            secretName: mon-tls
+      deploymentStrategy:
+        type: Recreate
+      persistence:
+        enabled: true
+        type: pvc
+        storageClassName: smb
+        accessModes:
+          - ReadWriteOnce
+        size: 10Gi
+      grafana.ini:
+        server:
+          domain: mon.odell.sh
+          root_url: '%(protocol)s://%(domain)s:%(http_port)s/grafana/'
+          serve_from_sub_path: true
+          enable_gzip: true
+        analytics:
+          check_for_updates: false
+      sidecar:
+        dashboards:
+          searchNamespace: ALL
+          provider:
+            allowUiUpdates: true
+    prometheus-node-exporter:
+      prometheus:
+        monitor:
+          enabled: true
+    prometheus:
+      ingress:
+        annotations:
+          cert-manager.io/cluster-issuer: letsencrypt-dns
+        enabled: true
+        ingressClassName: traefik
+        hosts:
+          - mon.odell.sh
+        paths:
+          - /prometheus
+        tls:
+          - hosts:
+              - mon.odell.sh
+            secretName: mon-tls
+      prometheusSpec:
+        podMonitorSelectorNilUsesHelmValues: false
+        serviceMonitorSelectorNilUsesHelmValues: false
+        ruleSelectorNilUsesHelmValues: false
+        replicas: 2
+        resources:
+          requests:
+            cpu: 500m
+            memory: 2300Mi
+          limits:
+            cpu: "2"
+            memory: 4Gi
+        externalUrl: http://mon.odell.sh/prometheus/
+        routePrefix: /prometheus/
+        retentionSize: 90GB
+        walCompression: true
+        storageSpec:
+          volumeClaimTemplate:
+            spec:
+              accessModes:
+                - ReadWriteOnce
+              resources:
+                requests:
+                  storage: 100Gi
+              storageClassName: openebs-lvm
+      additionalScrapeConfigs: []
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository

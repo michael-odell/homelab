@@ -12,12 +12,11 @@ spec:
         kind: HelmRepository
         name: cert-manager
   interval: 24h
-  values: {}
-values:
-  installCRDs: true
-  prometheus:
-    servicemonitor:
-      enabled: false
+  values:
+    installCRDs: true
+    prometheus:
+      servicemonitor:
+        enabled: false
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository

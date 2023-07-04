@@ -38,13 +38,12 @@
               }
             },
             "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "installCRDs": true,
-            "prometheus": {
-              "servicemonitor": {
-                "enabled": false
+            "values": {
+              "installCRDs": true,
+              "prometheus": {
+                "servicemonitor": {
+                  "enabled": false
+                }
               }
             }
           }
@@ -99,22 +98,21 @@
               }
             },
             "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "connect": {
-              "create": true,
-              "credentialsKey": "json",
-              "credentialsName": "opcreds",
-              "serviceType": "ClusterIP"
-            },
-            "operator": {
-              "autoRestart": true,
-              "create": true,
-              "pollingInterval": 600,
-              "token": {
-                "key": "token",
-                "name": "connect"
+            "values": {
+              "connect": {
+                "create": true,
+                "credentialsKey": "json",
+                "credentialsName": "opcreds",
+                "serviceType": "ClusterIP"
+              },
+              "operator": {
+                "autoRestart": true,
+                "create": true,
+                "pollingInterval": 600,
+                "token": {
+                  "key": "token",
+                  "name": "connect"
+                }
               }
             }
           }
@@ -178,33 +176,32 @@
               }
             },
             "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "env": [
-              {
-                "name": "AWS_ACCESS_KEY_ID",
-                "valueFrom": {
-                  "secretKeyRef": {
-                    "key": "access_key",
-                    "name": "aws-certbot"
+            "values": {
+              "env": [
+                {
+                  "name": "AWS_ACCESS_KEY_ID",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "access_key",
+                      "name": "aws-certbot"
+                    }
+                  }
+                },
+                {
+                  "name": "AWS_SECRET_ACCESS_KEY",
+                  "valueFrom": {
+                    "secretKeyRef": {
+                      "key": "secret_key",
+                      "name": "aws-certbot"
+                    }
                   }
                 }
-              },
-              {
-                "name": "AWS_SECRET_ACCESS_KEY",
-                "valueFrom": {
-                  "secretKeyRef": {
-                    "key": "secret_key",
-                    "name": "aws-certbot"
-                  }
-                }
-              }
-            ],
-            "policy": "sync",
-            "provider": "aws",
-            "txtOwnerId": "homelab",
-            "txtPrefix": "externaldns-"
+              ],
+              "policy": "sync",
+              "provider": "aws",
+              "txtOwnerId": "homelab",
+              "txtPrefix": "externaldns-"
+            }
           }
         },
         "helmRepo": {
@@ -275,26 +272,25 @@
               }
             },
             "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "grafana": {
-              "enabled": false
-            },
-            "isDefault": false,
-            "loki": {
-              "persistence": {
-                "accessModes": [
-                  "ReadWriteOnce"
-                ],
-                "enabled": true,
-                "size": "50Gi",
-                "storageClassName": "openebs-lvm"
+            "values": {
+              "grafana": {
+                "enabled": false
               },
-              "podManagementPolicy": "Parallel",
-              "replicas": 2,
-              "serviceMonitor": {
-                "enabled": true
+              "isDefault": false,
+              "loki": {
+                "persistence": {
+                  "accessModes": [
+                    "ReadWriteOnce"
+                  ],
+                  "enabled": true,
+                  "size": "50Gi",
+                  "storageClassName": "openebs-lvm"
+                },
+                "podManagementPolicy": "Parallel",
+                "replicas": 2,
+                "serviceMonitor": {
+                  "enabled": true
+                }
               }
             }
           }
@@ -362,168 +358,167 @@
               }
             },
             "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "alertmanager": {
-              "alertmanagerSpec": {
-                "externalUrl": "http://mon.odell.sh/alertmanager/",
-                "routePrefix": "/alertmanager/"
-              },
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+            "values": {
+              "alertmanager": {
+                "alertmanagerSpec": {
+                  "externalUrl": "http://mon.odell.sh/alertmanager/",
+                  "routePrefix": "/alertmanager/"
                 },
-                "enabled": true,
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "ingressClassName": "traefik",
-                "paths": [
-                  "/alertmanager"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              }
-            },
-            "defaultRules": {
-              "disabled": {
-                "KubeAggregatedAPIDown": true,
-                "Watchdog": true
-              },
-              "rules": {
-                "etcd": false,
-                "kubeScheduler": false
-              }
-            },
-            "grafana": {
-              "deploymentStrategy": {
-                "type": "Recreate"
-              },
-              "enabled": true,
-              "grafana.ini": {
-                "analytics": {
-                  "check_for_updates": false
-                },
-                "server": {
-                  "domain": "mon.odell.sh",
-                  "enable_gzip": true,
-                  "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
-                  "serve_from_sub_path": true
-                }
-              },
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-                },
-                "enabled": true,
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "ingressClassName": "traefik",
-                "pathType": "Prefix",
-                "paths": [
-                  "/grafana"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              },
-              "persistence": {
-                "accessModes": [
-                  "ReadWriteOnce"
-                ],
-                "enabled": true,
-                "size": "10Gi",
-                "storageClassName": "smb",
-                "type": "pvc"
-              },
-              "serviceMonitor": {
-                "enabled": true
-              },
-              "sidecar": {
-                "dashboards": {
-                  "provider": {
-                    "allowUiUpdates": true
+                "ingress": {
+                  "annotations": {
+                    "cert-manager.io/cluster-issuer": "letsencrypt-dns"
                   },
-                  "searchNamespace": "ALL"
-                }
-              }
-            },
-            "prometheus": {
-              "additionalScrapeConfigs": [],
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-                },
-                "enabled": true,
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "ingressClassName": "traefik",
-                "paths": [
-                  "/prometheus"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              },
-              "prometheusSpec": {
-                "externalUrl": "http://mon.odell.sh/prometheus/",
-                "podMonitorSelectorNilUsesHelmValues": false,
-                "replicas": 2,
-                "resources": {
-                  "limits": {
-                    "cpu": "2",
-                    "memory": "4Gi"
-                  },
-                  "requests": {
-                    "cpu": "500m",
-                    "memory": "2300Mi"
-                  }
-                },
-                "retentionSize": "90GB",
-                "routePrefix": "/prometheus/",
-                "ruleSelectorNilUsesHelmValues": false,
-                "serviceMonitorSelectorNilUsesHelmValues": false,
-                "storageSpec": {
-                  "volumeClaimTemplate": {
-                    "spec": {
-                      "accessModes": [
-                        "ReadWriteOnce"
+                  "enabled": true,
+                  "hosts": [
+                    "mon.odell.sh"
+                  ],
+                  "ingressClassName": "traefik",
+                  "paths": [
+                    "/alertmanager"
+                  ],
+                  "tls": [
+                    {
+                      "hosts": [
+                        "mon.odell.sh"
                       ],
-                      "resources": {
-                        "requests": {
-                          "storage": "100Gi"
-                        }
-                      },
-                      "storageClassName": "openebs-lvm"
+                      "secretName": "mon-tls"
                     }
+                  ]
+                }
+              },
+              "defaultRules": {
+                "disabled": {
+                  "KubeAggregatedAPIDown": true,
+                  "Watchdog": true
+                },
+                "rules": {
+                  "etcd": false,
+                  "kubeScheduler": false
+                }
+              },
+              "grafana": {
+                "deploymentStrategy": {
+                  "type": "Recreate"
+                },
+                "enabled": true,
+                "grafana.ini": {
+                  "analytics": {
+                    "check_for_updates": false
+                  },
+                  "server": {
+                    "domain": "mon.odell.sh",
+                    "enable_gzip": true,
+                    "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
+                    "serve_from_sub_path": true
                   }
                 },
-                "walCompression": true
-              }
-            },
-            "prometheus-node-exporter": {
-              "prometheus": {
-                "monitor": {
+                "ingress": {
+                  "annotations": {
+                    "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+                  },
+                  "enabled": true,
+                  "hosts": [
+                    "mon.odell.sh"
+                  ],
+                  "ingressClassName": "traefik",
+                  "pathType": "Prefix",
+                  "paths": [
+                    "/grafana"
+                  ],
+                  "tls": [
+                    {
+                      "hosts": [
+                        "mon.odell.sh"
+                      ],
+                      "secretName": "mon-tls"
+                    }
+                  ]
+                },
+                "persistence": {
+                  "accessModes": [
+                    "ReadWriteOnce"
+                  ],
+                  "enabled": true,
+                  "size": "10Gi",
+                  "storageClassName": "smb",
+                  "type": "pvc"
+                },
+                "serviceMonitor": {
                   "enabled": true
+                },
+                "sidecar": {
+                  "dashboards": {
+                    "provider": {
+                      "allowUiUpdates": true
+                    },
+                    "searchNamespace": "ALL"
+                  }
+                }
+              },
+              "prometheus": {
+                "additionalScrapeConfigs": [],
+                "ingress": {
+                  "annotations": {
+                    "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+                  },
+                  "enabled": true,
+                  "hosts": [
+                    "mon.odell.sh"
+                  ],
+                  "ingressClassName": "traefik",
+                  "paths": [
+                    "/prometheus"
+                  ],
+                  "tls": [
+                    {
+                      "hosts": [
+                        "mon.odell.sh"
+                      ],
+                      "secretName": "mon-tls"
+                    }
+                  ]
+                },
+                "prometheusSpec": {
+                  "externalUrl": "http://mon.odell.sh/prometheus/",
+                  "podMonitorSelectorNilUsesHelmValues": false,
+                  "replicas": 2,
+                  "resources": {
+                    "limits": {
+                      "cpu": "2",
+                      "memory": "4Gi"
+                    },
+                    "requests": {
+                      "cpu": "500m",
+                      "memory": "2300Mi"
+                    }
+                  },
+                  "retentionSize": "90GB",
+                  "routePrefix": "/prometheus/",
+                  "ruleSelectorNilUsesHelmValues": false,
+                  "serviceMonitorSelectorNilUsesHelmValues": false,
+                  "storageSpec": {
+                    "volumeClaimTemplate": {
+                      "spec": {
+                        "accessModes": [
+                          "ReadWriteOnce"
+                        ],
+                        "resources": {
+                          "requests": {
+                            "storage": "100Gi"
+                          }
+                        },
+                        "storageClassName": "openebs-lvm"
+                      }
+                    }
+                  },
+                  "walCompression": true
+                }
+              },
+              "prometheus-node-exporter": {
+                "prometheus": {
+                  "monitor": {
+                    "enabled": true
+                  }
                 }
               }
             }
@@ -735,11 +730,10 @@
               }
             },
             "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "lvm-localpv": {
-              "enabled": true
+            "values": {
+              "lvm-localpv": {
+                "enabled": true
+              }
             }
           }
         },
@@ -791,8 +785,7 @@
             },
             "interval": "24h",
             "values": {}
-          },
-          "values": {}
+          }
         },
         "helmRepo": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
@@ -837,29 +830,28 @@
               }
             },
             "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "persistentVolumes": {
-              "data": {
-                "size": "100Gi",
-                "storageClass": "openebs-lvm"
+            "values": {
+              "persistentVolumes": {
+                "data": {
+                  "size": "100Gi",
+                  "storageClass": "openebs-lvm"
+                },
+                "wal": {
+                  "size": "30Gi",
+                  "storageClass": "openebs-lvm"
+                }
               },
-              "wal": {
-                "size": "30Gi",
-                "storageClass": "openebs-lvm"
-              }
-            },
-            "resources": {
-              "requests": {
-                "cpu": "1",
-                "memory": "2Gi"
-              }
-            },
-            "timescaledbTune": {
-              "args": {
-                "cpus": "1",
-                "memory": "2GB"
+              "resources": {
+                "requests": {
+                  "cpu": "1",
+                  "memory": "2Gi"
+                }
+              },
+              "timescaledbTune": {
+                "args": {
+                  "cpus": "1",
+                  "memory": "2GB"
+                }
               }
             }
           }

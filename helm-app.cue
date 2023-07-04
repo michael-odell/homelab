@@ -11,11 +11,14 @@ helmApp: [NAME=_]: APP={
 				name:      APP.releaseName
 				namespace: APP.namespace
 			}
-			spec: chart: spec: {
-				chart: APP.chartName
-				sourceRef: name: APP.helmRepository.name
+			spec: {
+				chart: spec: {
+					chart: APP.chartName
+					sourceRef: name: APP.helmRepository.name
+				}
+
+				values: APP.values
 			}
-			values: APP.values
 		}
 
 		helmRepo: {

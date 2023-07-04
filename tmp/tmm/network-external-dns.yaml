@@ -12,23 +12,22 @@ spec:
         kind: HelmRepository
         name: external-dns
   interval: 24h
-  values: {}
-values:
-  policy: sync
-  txtPrefix: externaldns-
-  txtOwnerId: homelab
-  provider: aws
-  env:
-    - name: AWS_ACCESS_KEY_ID
-      valueFrom:
-        secretKeyRef:
-          name: aws-certbot
-          key: access_key
-    - name: AWS_SECRET_ACCESS_KEY
-      valueFrom:
-        secretKeyRef:
-          name: aws-certbot
-          key: secret_key
+  values:
+    policy: sync
+    txtPrefix: externaldns-
+    txtOwnerId: homelab
+    provider: aws
+    env:
+      - name: AWS_ACCESS_KEY_ID
+        valueFrom:
+          secretKeyRef:
+            name: aws-certbot
+            key: access_key
+      - name: AWS_SECRET_ACCESS_KEY
+        valueFrom:
+          secretKeyRef:
+            name: aws-certbot
+            key: secret_key
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository

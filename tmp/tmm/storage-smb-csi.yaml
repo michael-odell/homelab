@@ -13,7 +13,6 @@ spec:
         name: smb-csi
   interval: 24h
   values: {}
-values: {}
 ---
 apiVersion: source.toolkit.fluxcd.io/v1beta2
 kind: HelmRepository
