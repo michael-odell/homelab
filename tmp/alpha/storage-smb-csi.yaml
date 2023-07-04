@@ -6,7 +6,7 @@ metadata:
 spec:
   chart:
     spec:
-      chart: smb-csi
+      chart: csi-driver-smb
       reconcileStrategy: ChartVersion
       sourceRef:
         kind: HelmRepository

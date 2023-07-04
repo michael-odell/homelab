@@ -6,7 +6,7 @@ metadata:
 spec:
   chart:
     spec:
-      chart: mon
+      chart: kube-prometheus-stack
       reconcileStrategy: ChartVersion
       sourceRef:
         kind: HelmRepository

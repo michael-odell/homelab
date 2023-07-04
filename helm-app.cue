@@ -68,7 +68,7 @@ helmApp: [NAME=_]: APP={
 				name: #DnsSafeName
 			}
 		}
-		interval: "24h"
+		interval: string | *"24h"
 		values: {...}
 	}
 }

@@ -2,6 +2,7 @@ package homelab
 
 helmApp: loki: {
 	namespace: "mon"
+	chartName: "loki-stack"
 
 	helmRepository: {
 		name: "grafana"

@@ -2,6 +2,7 @@ package homelab
 
 helmApp: timescale: {
 	namespace: "data"
+	chartName: "timescaledb-single"
 
 	helmRepository: {
 		name: "timescale"

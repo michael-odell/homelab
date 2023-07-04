@@ -180,7 +180,7 @@ helmApp:
       txtOwnerId: homelab
       txtPrefix: externaldns-
   loki:
-    chartName: loki
+    chartName: loki-stack
     flux:
       helmRelease:
         apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -191,7 +191,7 @@ helmApp:
         spec:
           chart:
             spec:
-              chart: loki
+              chart: loki-stack
               reconcileStrategy: ChartVersion
               sourceRef:
                 kind: HelmRepository
@@ -243,7 +243,7 @@ helmApp:
         serviceMonitor:
           enabled: true
   mon:
-    chartName: mon
+    chartName: kube-prometheus-stack
     flux:
       helmRelease:
         apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -254,7 +254,7 @@ helmApp:
         spec:
           chart:
             spec:
-              chart: mon
+              chart: kube-prometheus-stack
               reconcileStrategy: ChartVersion
               sourceRef:
                 kind: HelmRepository
@@ -533,7 +533,7 @@ helmApp:
       lvm-localpv:
         enabled: true
   smb-csi:
-    chartName: smb-csi
+    chartName: csi-driver-smb
     flux:
       helmRelease:
         apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -544,7 +544,7 @@ helmApp:
         spec:
           chart:
             spec:
-              chart: smb-csi
+              chart: csi-driver-smb
               reconcileStrategy: ChartVersion
               sourceRef:
                 kind: HelmRepository
@@ -568,7 +568,7 @@ helmApp:
     releaseName: smb-csi
     values: {}
   timescale:
-    chartName: timescale
+    chartName: timescaledb-single
     flux:
       helmRelease:
         apiVersion: helm.toolkit.fluxcd.io/v2beta1
@@ -579,7 +579,7 @@ helmApp:
         spec:
           chart:
             spec:
-              chart: timescale
+              chart: timescaledb-single
               reconcileStrategy: ChartVersion
               sourceRef:
                 kind: HelmRepository

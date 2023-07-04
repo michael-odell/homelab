@@ -2,6 +2,7 @@ package homelab
 
 helmApp: "smb-csi": {
 	namespace: "storage"
+	chartName: "csi-driver-smb"
 
 	helmRepository: {
 		name: "smb-csi"

@@ -2,6 +2,7 @@ package homelab
 
 helmApp: mon: {
 	namespace: "mon"
+	chartName: "kube-prometheus-stack"
 
 	helmRepository: {
 		name: "prometheus-community"
