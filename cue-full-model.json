@@ -1,58 +1,36 @@
 {
+  "cluster": {
+    "alpha": {
+      "fqdn": "alpha.odell.sh",
+      "kubeType": "k3s",
+      "name": "alpha",
+      "nodeType": "physical",
+      "onePasswordVault": "homelab-alpha"
+    },
+    "tmm": {
+      "fqdn": "odell.sh",
+      "kubeType": "k3s",
+      "name": "tmm",
+      "nodeType": "multipass",
+      "onePasswordVault": "homelab-tmm"
+    }
+  },
+  "flux": {
+    "helmrepo": {}
+  },
   "helmApp": {},
   "helmRepository": {},
-  "cluster": {
-    "tmm": {
-      "name": "tmm",
-      "nodeType": "multipass",
-      "kubeType": "k3s",
-      "fqdn": "odell.sh",
-      "onePasswordVault": "homelab-tmm"
-    },
-    "alpha": {
-      "name": "alpha",
-      "nodeType": "physical",
-      "kubeType": "k3s",
-      "fqdn": "alpha.odell.sh",
-      "onePasswordVault": "homelab-alpha"
-    }
-  },
-  "flux": {
-    "helmrepo": {}
-  },
   "kubernetes": {
     "namespace": {
-      "storage": {
+      "data": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
           "labels": {
-            "kubernetes.io/metadata.name": "storage",
+            "kubernetes.io/metadata.name": "data",
             "secrets-injection": "enabled"
           },
-          "name": "storage"
-        }
-      },
-      "secrets": {
-        "apiVersion": "v1",
-        "kind": "Namespace",
-        "metadata": {
-          "labels": {
-            "kubernetes.io/metadata.name": "secrets",
-            "secrets-injection": "enabled"
-          },
-          "name": "secrets"
-        }
-      },
-      "network": {
-        "apiVersion": "v1",
-        "kind": "Namespace",
-        "metadata": {
-          "labels": {
-            "kubernetes.io/metadata.name": "network",
-            "secrets-injection": "enabled"
-          },
-          "name": "network"
+          "name": "data"
         }
       },
       "ha": {
@@ -77,38 +55,65 @@
           "name": "mon"
         }
       },
-      "data": {
+      "network": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
           "labels": {
-            "kubernetes.io/metadata.name": "data",
+            "kubernetes.io/metadata.name": "network",
             "secrets-injection": "enabled"
           },
-          "name": "data"
+          "name": "network"
+        }
+      },
+      "secrets": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "labels": {
+            "kubernetes.io/metadata.name": "secrets",
+            "secrets-injection": "enabled"
+          },
+          "name": "secrets"
+        }
+      },
+      "storage": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "labels": {
+            "kubernetes.io/metadata.name": "storage",
+            "secrets-injection": "enabled"
+          },
+          "name": "storage"
         }
       }
     }
   }
 }
 {
+  "cluster": {
+    "alpha": {
+      "fqdn": "alpha.odell.sh",
+      "kubeType": "k3s",
+      "name": "alpha",
+      "nodeType": "physical",
+      "onePasswordVault": "homelab-alpha"
+    },
+    "tmm": {
+      "fqdn": "odell.sh",
+      "kubeType": "k3s",
+      "name": "tmm",
+      "nodeType": "multipass",
+      "onePasswordVault": "homelab-tmm"
+    }
+  },
+  "flux": {
+    "helmrepo": {}
+  },
   "helmApp": {
     "cert-manager": {
-      "namespace": "network",
-      "helmRepository": {
-        "name": "cert-manager",
-        "url": "https://charts.jetstack.io"
-      },
       "chartName": "cert-manager",
-      "releaseName": "cert-manager",
-      "values": {
-        "installCRDs": true,
-        "prometheus": {
-          "servicemonitor": {
-            "enabled": false
-          }
-        }
-      },
       "flux": {
         "helmRelease": {
           "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
@@ -152,42 +157,103 @@
             "url": "https://charts.jetstack.io"
           }
         }
+      },
+      "helmRepository": {
+        "name": "cert-manager",
+        "url": "https://charts.jetstack.io"
+      },
+      "namespace": "network",
+      "releaseName": "cert-manager",
+      "values": {
+        "installCRDs": true,
+        "prometheus": {
+          "servicemonitor": {
+            "enabled": false
+          }
+        }
       }
     },
-    "external-dns": {
-      "namespace": "network",
-      "helmRepository": {
-        "name": "external-dns",
-        "url": "https://kubernetes-sigs.github.io/external-dns"
-      },
-      "chartName": "external-dns",
-      "releaseName": "external-dns",
-      "values": {
-        "policy": "sync",
-        "txtPrefix": "externaldns-",
-        "txtOwnerId": "homelab",
-        "provider": "aws",
-        "env": [
-          {
-            "name": "AWS_ACCESS_KEY_ID",
-            "valueFrom": {
-              "secretKeyRef": {
-                "name": "aws-certbot",
-                "key": "access_key"
-              }
-            }
+    "connect": {
+      "chartName": "connect",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "connect",
+            "namespace": "secrets"
           },
-          {
-            "name": "AWS_SECRET_ACCESS_KEY",
-            "valueFrom": {
-              "secretKeyRef": {
-                "name": "aws-certbot",
-                "key": "secret_key"
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "connect",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "onepassword"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {
+            "connect": {
+              "create": true,
+              "credentialsKey": "json",
+              "credentialsName": "opcreds",
+              "serviceType": "ClusterIP"
+            },
+            "operator": {
+              "autoRestart": true,
+              "create": true,
+              "pollingInterval": 600,
+              "token": {
+                "key": "token",
+                "name": "connect"
               }
             }
           }
-        ]
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "connect",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://1password.github.io/connect-helm-charts"
+          }
+        }
       },
+      "helmRepository": {
+        "name": "onepassword",
+        "url": "https://1password.github.io/connect-helm-charts"
+      },
+      "namespace": "secrets",
+      "releaseName": "connect",
+      "values": {
+        "connect": {
+          "create": true,
+          "credentialsKey": "json",
+          "credentialsName": "opcreds",
+          "serviceType": "ClusterIP"
+        },
+        "operator": {
+          "autoRestart": true,
+          "create": true,
+          "pollingInterval": 600,
+          "token": {
+            "key": "token",
+            "name": "connect"
+          }
+        }
+      }
+    },
+    "external-dns": {
+      "chartName": "external-dns",
       "flux": {
         "helmRelease": {
           "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
@@ -211,17 +277,13 @@
             "values": {}
           },
           "values": {
-            "policy": "sync",
-            "txtPrefix": "externaldns-",
-            "txtOwnerId": "homelab",
-            "provider": "aws",
             "env": [
               {
                 "name": "AWS_ACCESS_KEY_ID",
                 "valueFrom": {
                   "secretKeyRef": {
-                    "name": "aws-certbot",
-                    "key": "access_key"
+                    "key": "access_key",
+                    "name": "aws-certbot"
                   }
                 }
               },
@@ -229,12 +291,16 @@
                 "name": "AWS_SECRET_ACCESS_KEY",
                 "valueFrom": {
                   "secretKeyRef": {
-                    "name": "aws-certbot",
-                    "key": "secret_key"
+                    "key": "secret_key",
+                    "name": "aws-certbot"
                   }
                 }
               }
-            ]
+            ],
+            "policy": "sync",
+            "provider": "aws",
+            "txtOwnerId": "homelab",
+            "txtPrefix": "externaldns-"
           }
         },
         "helmRepo": {
@@ -249,410 +315,42 @@
             "url": "https://kubernetes-sigs.github.io/external-dns"
           }
         }
-      }
-    },
-    "mon": {
-      "namespace": "mon",
+      },
       "helmRepository": {
-        "name": "prometheus-community",
-        "url": "https://prometheus-community.github.io/helm-charts"
+        "name": "external-dns",
+        "url": "https://kubernetes-sigs.github.io/external-dns"
       },
-      "chartName": "mon",
-      "releaseName": "mon",
+      "namespace": "network",
+      "releaseName": "external-dns",
       "values": {
-        "alertmanager": {
-          "ingress": {
-            "annotations": {
-              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-            },
-            "enabled": true,
-            "ingressClassName": "traefik",
-            "hosts": [
-              "mon.odell.sh"
-            ],
-            "paths": [
-              "/alertmanager"
-            ],
-            "tls": [
-              {
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "secretName": "mon-tls"
-              }
-            ]
-          },
-          "alertmanagerSpec": {
-            "externalUrl": "http://mon.odell.sh/alertmanager/",
-            "routePrefix": "/alertmanager/"
-          }
-        },
-        "defaultRules": {
-          "rules": {
-            "kubeScheduler": false,
-            "etcd": false
-          },
-          "disabled": {
-            "Watchdog": true,
-            "KubeAggregatedAPIDown": true
-          }
-        },
-        "grafana": {
-          "enabled": true,
-          "serviceMonitor": {
-            "enabled": true
-          },
-          "ingress": {
-            "annotations": {
-              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-            },
-            "enabled": true,
-            "ingressClassName": "traefik",
-            "pathType": "Prefix",
-            "hosts": [
-              "mon.odell.sh"
-            ],
-            "paths": [
-              "/grafana"
-            ],
-            "tls": [
-              {
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "secretName": "mon-tls"
-              }
-            ]
-          },
-          "deploymentStrategy": {
-            "type": "Recreate"
-          },
-          "persistence": {
-            "enabled": true,
-            "type": "pvc",
-            "storageClassName": "smb",
-            "accessModes": [
-              "ReadWriteOnce"
-            ],
-            "size": "10Gi"
-          },
-          "grafana.ini": {
-            "server": {
-              "domain": "mon.odell.sh",
-              "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
-              "serve_from_sub_path": true,
-              "enable_gzip": true
-            },
-            "analytics": {
-              "check_for_updates": false
-            }
-          },
-          "sidecar": {
-            "dashboards": {
-              "searchNamespace": "ALL",
-              "provider": {
-                "allowUiUpdates": true
-              }
-            }
-          }
-        },
-        "prometheus-node-exporter": {
-          "prometheus": {
-            "monitor": {
-              "enabled": true
-            }
-          }
-        },
-        "prometheus": {
-          "ingress": {
-            "annotations": {
-              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-            },
-            "enabled": true,
-            "ingressClassName": "traefik",
-            "hosts": [
-              "mon.odell.sh"
-            ],
-            "paths": [
-              "/prometheus"
-            ],
-            "tls": [
-              {
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "secretName": "mon-tls"
-              }
-            ]
-          },
-          "prometheusSpec": {
-            "podMonitorSelectorNilUsesHelmValues": false,
-            "serviceMonitorSelectorNilUsesHelmValues": false,
-            "ruleSelectorNilUsesHelmValues": false,
-            "replicas": 2,
-            "resources": {
-              "requests": {
-                "cpu": "500m",
-                "memory": "2300Mi"
-              },
-              "limits": {
-                "cpu": "2",
-                "memory": "4Gi"
-              }
-            },
-            "externalUrl": "http://mon.odell.sh/prometheus/",
-            "routePrefix": "/prometheus/",
-            "retentionSize": "90GB",
-            "walCompression": true,
-            "storageSpec": {
-              "volumeClaimTemplate": {
-                "spec": {
-                  "accessModes": [
-                    "ReadWriteOnce"
-                  ],
-                  "resources": {
-                    "requests": {
-                      "storage": "100Gi"
-                    }
-                  },
-                  "storageClassName": "openebs-lvm"
-                }
+        "env": [
+          {
+            "name": "AWS_ACCESS_KEY_ID",
+            "valueFrom": {
+              "secretKeyRef": {
+                "key": "access_key",
+                "name": "aws-certbot"
               }
             }
           },
-          "additionalScrapeConfigs": []
-        }
-      },
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "mon",
-            "namespace": "mon"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "mon",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "prometheus-community"
-                }
+          {
+            "name": "AWS_SECRET_ACCESS_KEY",
+            "valueFrom": {
+              "secretKeyRef": {
+                "key": "secret_key",
+                "name": "aws-certbot"
               }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "alertmanager": {
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-                },
-                "enabled": true,
-                "ingressClassName": "traefik",
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "paths": [
-                  "/alertmanager"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              },
-              "alertmanagerSpec": {
-                "externalUrl": "http://mon.odell.sh/alertmanager/",
-                "routePrefix": "/alertmanager/"
-              }
-            },
-            "defaultRules": {
-              "rules": {
-                "kubeScheduler": false,
-                "etcd": false
-              },
-              "disabled": {
-                "Watchdog": true,
-                "KubeAggregatedAPIDown": true
-              }
-            },
-            "grafana": {
-              "enabled": true,
-              "serviceMonitor": {
-                "enabled": true
-              },
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-                },
-                "enabled": true,
-                "ingressClassName": "traefik",
-                "pathType": "Prefix",
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "paths": [
-                  "/grafana"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              },
-              "deploymentStrategy": {
-                "type": "Recreate"
-              },
-              "persistence": {
-                "enabled": true,
-                "type": "pvc",
-                "storageClassName": "smb",
-                "accessModes": [
-                  "ReadWriteOnce"
-                ],
-                "size": "10Gi"
-              },
-              "grafana.ini": {
-                "server": {
-                  "domain": "mon.odell.sh",
-                  "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
-                  "serve_from_sub_path": true,
-                  "enable_gzip": true
-                },
-                "analytics": {
-                  "check_for_updates": false
-                }
-              },
-              "sidecar": {
-                "dashboards": {
-                  "searchNamespace": "ALL",
-                  "provider": {
-                    "allowUiUpdates": true
-                  }
-                }
-              }
-            },
-            "prometheus-node-exporter": {
-              "prometheus": {
-                "monitor": {
-                  "enabled": true
-                }
-              }
-            },
-            "prometheus": {
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-                },
-                "enabled": true,
-                "ingressClassName": "traefik",
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "paths": [
-                  "/prometheus"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              },
-              "prometheusSpec": {
-                "podMonitorSelectorNilUsesHelmValues": false,
-                "serviceMonitorSelectorNilUsesHelmValues": false,
-                "ruleSelectorNilUsesHelmValues": false,
-                "replicas": 2,
-                "resources": {
-                  "requests": {
-                    "cpu": "500m",
-                    "memory": "2300Mi"
-                  },
-                  "limits": {
-                    "cpu": "2",
-                    "memory": "4Gi"
-                  }
-                },
-                "externalUrl": "http://mon.odell.sh/prometheus/",
-                "routePrefix": "/prometheus/",
-                "retentionSize": "90GB",
-                "walCompression": true,
-                "storageSpec": {
-                  "volumeClaimTemplate": {
-                    "spec": {
-                      "accessModes": [
-                        "ReadWriteOnce"
-                      ],
-                      "resources": {
-                        "requests": {
-                          "storage": "100Gi"
-                        }
-                      },
-                      "storageClassName": "openebs-lvm"
-                    }
-                  }
-                }
-              },
-              "additionalScrapeConfigs": []
             }
           }
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "mon",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://prometheus-community.github.io/helm-charts"
-          }
-        }
+        ],
+        "policy": "sync",
+        "provider": "aws",
+        "txtOwnerId": "homelab",
+        "txtPrefix": "externaldns-"
       }
     },
     "loki": {
-      "namespace": "mon",
-      "helmRepository": {
-        "name": "grafana",
-        "url": "https://grafana.github.io/helm-charts"
-      },
       "chartName": "loki",
-      "releaseName": "loki",
-      "values": {
-        "grafana": {
-          "enabled": false
-        },
-        "isDefault": false,
-        "loki": {
-          "replicas": 2,
-          "persistence": {
-            "enabled": true,
-            "storageClassName": "openebs-lvm",
-            "accessModes": [
-              "ReadWriteOnce"
-            ],
-            "size": "50Gi"
-          },
-          "serviceMonitor": {
-            "enabled": true
-          },
-          "podManagementPolicy": "Parallel"
-        }
-      },
       "flux": {
         "helmRelease": {
           "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
@@ -681,19 +379,19 @@
             },
             "isDefault": false,
             "loki": {
-              "replicas": 2,
               "persistence": {
-                "enabled": true,
-                "storageClassName": "openebs-lvm",
                 "accessModes": [
                   "ReadWriteOnce"
                 ],
-                "size": "50Gi"
+                "enabled": true,
+                "size": "50Gi",
+                "storageClassName": "openebs-lvm"
               },
+              "podManagementPolicy": "Parallel",
+              "replicas": 2,
               "serviceMonitor": {
                 "enabled": true
-              },
-              "podManagementPolicy": "Parallel"
+              }
             }
           }
         },
@@ -709,49 +407,53 @@
             "url": "https://grafana.github.io/helm-charts"
           }
         }
+      },
+      "helmRepository": {
+        "name": "grafana",
+        "url": "https://grafana.github.io/helm-charts"
+      },
+      "namespace": "mon",
+      "releaseName": "loki",
+      "values": {
+        "grafana": {
+          "enabled": false
+        },
+        "isDefault": false,
+        "loki": {
+          "persistence": {
+            "accessModes": [
+              "ReadWriteOnce"
+            ],
+            "enabled": true,
+            "size": "50Gi",
+            "storageClassName": "openebs-lvm"
+          },
+          "podManagementPolicy": "Parallel",
+          "replicas": 2,
+          "serviceMonitor": {
+            "enabled": true
+          }
+        }
       }
     },
-    "connect": {
-      "namespace": "secrets",
-      "helmRepository": {
-        "name": "onepassword",
-        "url": "https://1password.github.io/connect-helm-charts"
-      },
-      "chartName": "connect",
-      "releaseName": "connect",
-      "values": {
-        "operator": {
-          "create": true,
-          "autoRestart": true,
-          "pollingInterval": 600,
-          "token": {
-            "name": "connect",
-            "key": "token"
-          }
-        },
-        "connect": {
-          "create": true,
-          "credentialsName": "opcreds",
-          "credentialsKey": "json",
-          "serviceType": "ClusterIP"
-        }
-      },
+    "mon": {
+      "chartName": "mon",
       "flux": {
         "helmRelease": {
           "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
           "kind": "HelmRelease",
           "metadata": {
-            "name": "connect",
-            "namespace": "secrets"
+            "name": "mon",
+            "namespace": "mon"
           },
           "spec": {
             "chart": {
               "spec": {
-                "chart": "connect",
+                "chart": "mon",
                 "reconcileStrategy": "ChartVersion",
                 "sourceRef": {
                   "kind": "HelmRepository",
-                  "name": "onepassword"
+                  "name": "prometheus-community"
                 }
               }
             },
@@ -759,20 +461,167 @@
             "values": {}
           },
           "values": {
-            "operator": {
-              "create": true,
-              "autoRestart": true,
-              "pollingInterval": 600,
-              "token": {
-                "name": "connect",
-                "key": "token"
+            "alertmanager": {
+              "alertmanagerSpec": {
+                "externalUrl": "http://mon.odell.sh/alertmanager/",
+                "routePrefix": "/alertmanager/"
+              },
+              "ingress": {
+                "annotations": {
+                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+                },
+                "enabled": true,
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "ingressClassName": "traefik",
+                "paths": [
+                  "/alertmanager"
+                ],
+                "tls": [
+                  {
+                    "hosts": [
+                      "mon.odell.sh"
+                    ],
+                    "secretName": "mon-tls"
+                  }
+                ]
               }
             },
-            "connect": {
-              "create": true,
-              "credentialsName": "opcreds",
-              "credentialsKey": "json",
-              "serviceType": "ClusterIP"
+            "defaultRules": {
+              "disabled": {
+                "KubeAggregatedAPIDown": true,
+                "Watchdog": true
+              },
+              "rules": {
+                "etcd": false,
+                "kubeScheduler": false
+              }
+            },
+            "grafana": {
+              "deploymentStrategy": {
+                "type": "Recreate"
+              },
+              "enabled": true,
+              "grafana.ini": {
+                "analytics": {
+                  "check_for_updates": false
+                },
+                "server": {
+                  "domain": "mon.odell.sh",
+                  "enable_gzip": true,
+                  "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
+                  "serve_from_sub_path": true
+                }
+              },
+              "ingress": {
+                "annotations": {
+                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+                },
+                "enabled": true,
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "ingressClassName": "traefik",
+                "pathType": "Prefix",
+                "paths": [
+                  "/grafana"
+                ],
+                "tls": [
+                  {
+                    "hosts": [
+                      "mon.odell.sh"
+                    ],
+                    "secretName": "mon-tls"
+                  }
+                ]
+              },
+              "persistence": {
+                "accessModes": [
+                  "ReadWriteOnce"
+                ],
+                "enabled": true,
+                "size": "10Gi",
+                "storageClassName": "smb",
+                "type": "pvc"
+              },
+              "serviceMonitor": {
+                "enabled": true
+              },
+              "sidecar": {
+                "dashboards": {
+                  "provider": {
+                    "allowUiUpdates": true
+                  },
+                  "searchNamespace": "ALL"
+                }
+              }
+            },
+            "prometheus": {
+              "additionalScrapeConfigs": [],
+              "ingress": {
+                "annotations": {
+                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+                },
+                "enabled": true,
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "ingressClassName": "traefik",
+                "paths": [
+                  "/prometheus"
+                ],
+                "tls": [
+                  {
+                    "hosts": [
+                      "mon.odell.sh"
+                    ],
+                    "secretName": "mon-tls"
+                  }
+                ]
+              },
+              "prometheusSpec": {
+                "externalUrl": "http://mon.odell.sh/prometheus/",
+                "podMonitorSelectorNilUsesHelmValues": false,
+                "replicas": 2,
+                "resources": {
+                  "limits": {
+                    "cpu": "2",
+                    "memory": "4Gi"
+                  },
+                  "requests": {
+                    "cpu": "500m",
+                    "memory": "2300Mi"
+                  }
+                },
+                "retentionSize": "90GB",
+                "routePrefix": "/prometheus/",
+                "ruleSelectorNilUsesHelmValues": false,
+                "serviceMonitorSelectorNilUsesHelmValues": false,
+                "storageSpec": {
+                  "volumeClaimTemplate": {
+                    "spec": {
+                      "accessModes": [
+                        "ReadWriteOnce"
+                      ],
+                      "resources": {
+                        "requests": {
+                          "storage": "100Gi"
+                        }
+                      },
+                      "storageClassName": "openebs-lvm"
+                    }
+                  }
+                },
+                "walCompression": true
+              }
+            },
+            "prometheus-node-exporter": {
+              "prometheus": {
+                "monitor": {
+                  "enabled": true
+                }
+              }
             }
           }
         },
@@ -780,29 +629,188 @@
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
-            "name": "connect",
+            "name": "mon",
             "namespace": "flux-system"
           },
           "spec": {
             "interval": "12h",
-            "url": "https://1password.github.io/connect-helm-charts"
+            "url": "https://prometheus-community.github.io/helm-charts"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "prometheus-community",
+        "url": "https://prometheus-community.github.io/helm-charts"
+      },
+      "namespace": "mon",
+      "releaseName": "mon",
+      "values": {
+        "alertmanager": {
+          "alertmanagerSpec": {
+            "externalUrl": "http://mon.odell.sh/alertmanager/",
+            "routePrefix": "/alertmanager/"
+          },
+          "ingress": {
+            "annotations": {
+              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+            },
+            "enabled": true,
+            "hosts": [
+              "mon.odell.sh"
+            ],
+            "ingressClassName": "traefik",
+            "paths": [
+              "/alertmanager"
+            ],
+            "tls": [
+              {
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "secretName": "mon-tls"
+              }
+            ]
+          }
+        },
+        "defaultRules": {
+          "disabled": {
+            "KubeAggregatedAPIDown": true,
+            "Watchdog": true
+          },
+          "rules": {
+            "etcd": false,
+            "kubeScheduler": false
+          }
+        },
+        "grafana": {
+          "deploymentStrategy": {
+            "type": "Recreate"
+          },
+          "enabled": true,
+          "grafana.ini": {
+            "analytics": {
+              "check_for_updates": false
+            },
+            "server": {
+              "domain": "mon.odell.sh",
+              "enable_gzip": true,
+              "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
+              "serve_from_sub_path": true
+            }
+          },
+          "ingress": {
+            "annotations": {
+              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+            },
+            "enabled": true,
+            "hosts": [
+              "mon.odell.sh"
+            ],
+            "ingressClassName": "traefik",
+            "pathType": "Prefix",
+            "paths": [
+              "/grafana"
+            ],
+            "tls": [
+              {
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "secretName": "mon-tls"
+              }
+            ]
+          },
+          "persistence": {
+            "accessModes": [
+              "ReadWriteOnce"
+            ],
+            "enabled": true,
+            "size": "10Gi",
+            "storageClassName": "smb",
+            "type": "pvc"
+          },
+          "serviceMonitor": {
+            "enabled": true
+          },
+          "sidecar": {
+            "dashboards": {
+              "provider": {
+                "allowUiUpdates": true
+              },
+              "searchNamespace": "ALL"
+            }
+          }
+        },
+        "prometheus": {
+          "additionalScrapeConfigs": [],
+          "ingress": {
+            "annotations": {
+              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+            },
+            "enabled": true,
+            "hosts": [
+              "mon.odell.sh"
+            ],
+            "ingressClassName": "traefik",
+            "paths": [
+              "/prometheus"
+            ],
+            "tls": [
+              {
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "secretName": "mon-tls"
+              }
+            ]
+          },
+          "prometheusSpec": {
+            "externalUrl": "http://mon.odell.sh/prometheus/",
+            "podMonitorSelectorNilUsesHelmValues": false,
+            "replicas": 2,
+            "resources": {
+              "limits": {
+                "cpu": "2",
+                "memory": "4Gi"
+              },
+              "requests": {
+                "cpu": "500m",
+                "memory": "2300Mi"
+              }
+            },
+            "retentionSize": "90GB",
+            "routePrefix": "/prometheus/",
+            "ruleSelectorNilUsesHelmValues": false,
+            "serviceMonitorSelectorNilUsesHelmValues": false,
+            "storageSpec": {
+              "volumeClaimTemplate": {
+                "spec": {
+                  "accessModes": [
+                    "ReadWriteOnce"
+                  ],
+                  "resources": {
+                    "requests": {
+                      "storage": "100Gi"
+                    }
+                  },
+                  "storageClassName": "openebs-lvm"
+                }
+              }
+            },
+            "walCompression": true
+          }
+        },
+        "prometheus-node-exporter": {
+          "prometheus": {
+            "monitor": {
+              "enabled": true
+            }
           }
         }
       }
     },
     "openebs": {
-      "namespace": "storage",
-      "helmRepository": {
-        "name": "openebs",
-        "url": "https://openebs.github.io/charts"
-      },
       "chartName": "openebs",
-      "releaseName": "openebs",
-      "values": {
-        "lvm-localpv": {
-          "enabled": true
-        }
-      },
       "flux": {
         "helmRelease": {
           "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
@@ -843,17 +851,21 @@
             "url": "https://openebs.github.io/charts"
           }
         }
+      },
+      "helmRepository": {
+        "name": "openebs",
+        "url": "https://openebs.github.io/charts"
+      },
+      "namespace": "storage",
+      "releaseName": "openebs",
+      "values": {
+        "lvm-localpv": {
+          "enabled": true
+        }
       }
     },
     "smb-csi": {
-      "namespace": "storage",
-      "helmRepository": {
-        "name": "smb-csi",
-        "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
-      },
       "chartName": "smb-csi",
-      "releaseName": "smb-csi",
-      "values": {},
       "flux": {
         "helmRelease": {
           "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
@@ -890,40 +902,17 @@
             "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
           }
         }
-      }
+      },
+      "helmRepository": {
+        "name": "smb-csi",
+        "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
+      },
+      "namespace": "storage",
+      "releaseName": "smb-csi",
+      "values": {}
     },
     "timescale": {
-      "namespace": "data",
-      "helmRepository": {
-        "name": "timescale",
-        "url": "https://charts.timescale.com"
-      },
       "chartName": "timescale",
-      "releaseName": "timescale",
-      "values": {
-        "persistentVolumes": {
-          "data": {
-            "size": "100Gi",
-            "storageClass": "openebs-lvm"
-          },
-          "wal": {
-            "size": "30Gi",
-            "storageClass": "openebs-lvm"
-          }
-        },
-        "resources": {
-          "requests": {
-            "cpu": "1",
-            "memory": "2Gi"
-          }
-        },
-        "timescaledbTune": {
-          "args": {
-            "cpus": "1",
-            "memory": "2GB"
-          }
-        }
-      },
       "flux": {
         "helmRelease": {
           "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
@@ -981,64 +970,53 @@
           "spec": {
             "interval": "12h",
             "url": "https://charts.timescale.com"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "timescale",
+        "url": "https://charts.timescale.com"
+      },
+      "namespace": "data",
+      "releaseName": "timescale",
+      "values": {
+        "persistentVolumes": {
+          "data": {
+            "size": "100Gi",
+            "storageClass": "openebs-lvm"
+          },
+          "wal": {
+            "size": "30Gi",
+            "storageClass": "openebs-lvm"
+          }
+        },
+        "resources": {
+          "requests": {
+            "cpu": "1",
+            "memory": "2Gi"
+          }
+        },
+        "timescaledbTune": {
+          "args": {
+            "cpus": "1",
+            "memory": "2GB"
           }
         }
       }
     }
   },
   "helmRepository": {},
-  "cluster": {
-    "tmm": {
-      "name": "tmm",
-      "nodeType": "multipass",
-      "kubeType": "k3s",
-      "fqdn": "odell.sh",
-      "onePasswordVault": "homelab-tmm"
-    },
-    "alpha": {
-      "name": "alpha",
-      "nodeType": "physical",
-      "kubeType": "k3s",
-      "fqdn": "alpha.odell.sh",
-      "onePasswordVault": "homelab-alpha"
-    }
-  },
-  "flux": {
-    "helmrepo": {}
-  },
   "kubernetes": {
     "namespace": {
-      "storage": {
+      "data": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
           "labels": {
-            "kubernetes.io/metadata.name": "storage",
+            "kubernetes.io/metadata.name": "data",
             "secrets-injection": "enabled"
           },
-          "name": "storage"
-        }
-      },
-      "secrets": {
-        "apiVersion": "v1",
-        "kind": "Namespace",
-        "metadata": {
-          "labels": {
-            "kubernetes.io/metadata.name": "secrets",
-            "secrets-injection": "enabled"
-          },
-          "name": "secrets"
-        }
-      },
-      "network": {
-        "apiVersion": "v1",
-        "kind": "Namespace",
-        "metadata": {
-          "labels": {
-            "kubernetes.io/metadata.name": "network",
-            "secrets-injection": "enabled"
-          },
-          "name": "network"
+          "name": "data"
         }
       },
       "ha": {
@@ -1063,975 +1041,61 @@
           "name": "mon"
         }
       },
-      "data": {
+      "network": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
           "labels": {
-            "kubernetes.io/metadata.name": "data",
+            "kubernetes.io/metadata.name": "network",
             "secrets-injection": "enabled"
           },
-          "name": "data"
+          "name": "network"
+        }
+      },
+      "secrets": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "labels": {
+            "kubernetes.io/metadata.name": "secrets",
+            "secrets-injection": "enabled"
+          },
+          "name": "secrets"
+        }
+      },
+      "storage": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "labels": {
+            "kubernetes.io/metadata.name": "storage",
+            "secrets-injection": "enabled"
+          },
+          "name": "storage"
         }
       }
     }
   }
 }
 {
-  "helmApp": {
-    "cert-manager": {
-      "namespace": "network",
-      "helmRepository": {
-        "name": "cert-manager",
-        "url": "https://charts.jetstack.io"
-      },
-      "chartName": "cert-manager",
-      "releaseName": "cert-manager",
-      "values": {
-        "installCRDs": true,
-        "prometheus": {
-          "servicemonitor": {
-            "enabled": false
-          }
-        }
-      },
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "cert-manager",
-            "namespace": "network"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "cert-manager",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "cert-manager"
-                }
-              }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "installCRDs": true,
-            "prometheus": {
-              "servicemonitor": {
-                "enabled": false
-              }
-            }
-          }
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "cert-manager",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://charts.jetstack.io"
-          }
-        }
-      }
-    },
-    "external-dns": {
-      "namespace": "network",
-      "helmRepository": {
-        "name": "external-dns",
-        "url": "https://kubernetes-sigs.github.io/external-dns"
-      },
-      "chartName": "external-dns",
-      "releaseName": "external-dns",
-      "values": {
-        "policy": "sync",
-        "txtPrefix": "externaldns-",
-        "txtOwnerId": "homelab",
-        "provider": "aws",
-        "env": [
-          {
-            "name": "AWS_ACCESS_KEY_ID",
-            "valueFrom": {
-              "secretKeyRef": {
-                "name": "aws-certbot",
-                "key": "access_key"
-              }
-            }
-          },
-          {
-            "name": "AWS_SECRET_ACCESS_KEY",
-            "valueFrom": {
-              "secretKeyRef": {
-                "name": "aws-certbot",
-                "key": "secret_key"
-              }
-            }
-          }
-        ]
-      },
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "external-dns",
-            "namespace": "network"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "external-dns",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "external-dns"
-                }
-              }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "policy": "sync",
-            "txtPrefix": "externaldns-",
-            "txtOwnerId": "homelab",
-            "provider": "aws",
-            "env": [
-              {
-                "name": "AWS_ACCESS_KEY_ID",
-                "valueFrom": {
-                  "secretKeyRef": {
-                    "name": "aws-certbot",
-                    "key": "access_key"
-                  }
-                }
-              },
-              {
-                "name": "AWS_SECRET_ACCESS_KEY",
-                "valueFrom": {
-                  "secretKeyRef": {
-                    "name": "aws-certbot",
-                    "key": "secret_key"
-                  }
-                }
-              }
-            ]
-          }
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "external-dns",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://kubernetes-sigs.github.io/external-dns"
-          }
-        }
-      }
-    },
-    "mon": {
-      "namespace": "mon",
-      "helmRepository": {
-        "name": "prometheus-community",
-        "url": "https://prometheus-community.github.io/helm-charts"
-      },
-      "chartName": "mon",
-      "releaseName": "mon",
-      "values": {
-        "alertmanager": {
-          "ingress": {
-            "annotations": {
-              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-            },
-            "enabled": true,
-            "ingressClassName": "traefik",
-            "hosts": [
-              "mon.odell.sh"
-            ],
-            "paths": [
-              "/alertmanager"
-            ],
-            "tls": [
-              {
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "secretName": "mon-tls"
-              }
-            ]
-          },
-          "alertmanagerSpec": {
-            "externalUrl": "http://mon.odell.sh/alertmanager/",
-            "routePrefix": "/alertmanager/"
-          }
-        },
-        "defaultRules": {
-          "rules": {
-            "kubeScheduler": false,
-            "etcd": false
-          },
-          "disabled": {
-            "Watchdog": true,
-            "KubeAggregatedAPIDown": true
-          }
-        },
-        "grafana": {
-          "enabled": true,
-          "serviceMonitor": {
-            "enabled": true
-          },
-          "ingress": {
-            "annotations": {
-              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-            },
-            "enabled": true,
-            "ingressClassName": "traefik",
-            "pathType": "Prefix",
-            "hosts": [
-              "mon.odell.sh"
-            ],
-            "paths": [
-              "/grafana"
-            ],
-            "tls": [
-              {
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "secretName": "mon-tls"
-              }
-            ]
-          },
-          "deploymentStrategy": {
-            "type": "Recreate"
-          },
-          "persistence": {
-            "enabled": true,
-            "type": "pvc",
-            "storageClassName": "smb",
-            "accessModes": [
-              "ReadWriteOnce"
-            ],
-            "size": "10Gi"
-          },
-          "grafana.ini": {
-            "server": {
-              "domain": "mon.odell.sh",
-              "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
-              "serve_from_sub_path": true,
-              "enable_gzip": true
-            },
-            "analytics": {
-              "check_for_updates": false
-            }
-          },
-          "sidecar": {
-            "dashboards": {
-              "searchNamespace": "ALL",
-              "provider": {
-                "allowUiUpdates": true
-              }
-            }
-          }
-        },
-        "prometheus-node-exporter": {
-          "prometheus": {
-            "monitor": {
-              "enabled": true
-            }
-          }
-        },
-        "prometheus": {
-          "ingress": {
-            "annotations": {
-              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-            },
-            "enabled": true,
-            "ingressClassName": "traefik",
-            "hosts": [
-              "mon.odell.sh"
-            ],
-            "paths": [
-              "/prometheus"
-            ],
-            "tls": [
-              {
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "secretName": "mon-tls"
-              }
-            ]
-          },
-          "prometheusSpec": {
-            "podMonitorSelectorNilUsesHelmValues": false,
-            "serviceMonitorSelectorNilUsesHelmValues": false,
-            "ruleSelectorNilUsesHelmValues": false,
-            "replicas": 2,
-            "resources": {
-              "requests": {
-                "cpu": "500m",
-                "memory": "2300Mi"
-              },
-              "limits": {
-                "cpu": "2",
-                "memory": "4Gi"
-              }
-            },
-            "externalUrl": "http://mon.odell.sh/prometheus/",
-            "routePrefix": "/prometheus/",
-            "retentionSize": "90GB",
-            "walCompression": true,
-            "storageSpec": {
-              "volumeClaimTemplate": {
-                "spec": {
-                  "accessModes": [
-                    "ReadWriteOnce"
-                  ],
-                  "resources": {
-                    "requests": {
-                      "storage": "100Gi"
-                    }
-                  },
-                  "storageClassName": "openebs-lvm"
-                }
-              }
-            }
-          },
-          "additionalScrapeConfigs": []
-        }
-      },
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "mon",
-            "namespace": "mon"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "mon",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "prometheus-community"
-                }
-              }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "alertmanager": {
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-                },
-                "enabled": true,
-                "ingressClassName": "traefik",
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "paths": [
-                  "/alertmanager"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              },
-              "alertmanagerSpec": {
-                "externalUrl": "http://mon.odell.sh/alertmanager/",
-                "routePrefix": "/alertmanager/"
-              }
-            },
-            "defaultRules": {
-              "rules": {
-                "kubeScheduler": false,
-                "etcd": false
-              },
-              "disabled": {
-                "Watchdog": true,
-                "KubeAggregatedAPIDown": true
-              }
-            },
-            "grafana": {
-              "enabled": true,
-              "serviceMonitor": {
-                "enabled": true
-              },
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-                },
-                "enabled": true,
-                "ingressClassName": "traefik",
-                "pathType": "Prefix",
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "paths": [
-                  "/grafana"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              },
-              "deploymentStrategy": {
-                "type": "Recreate"
-              },
-              "persistence": {
-                "enabled": true,
-                "type": "pvc",
-                "storageClassName": "smb",
-                "accessModes": [
-                  "ReadWriteOnce"
-                ],
-                "size": "10Gi"
-              },
-              "grafana.ini": {
-                "server": {
-                  "domain": "mon.odell.sh",
-                  "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
-                  "serve_from_sub_path": true,
-                  "enable_gzip": true
-                },
-                "analytics": {
-                  "check_for_updates": false
-                }
-              },
-              "sidecar": {
-                "dashboards": {
-                  "searchNamespace": "ALL",
-                  "provider": {
-                    "allowUiUpdates": true
-                  }
-                }
-              }
-            },
-            "prometheus-node-exporter": {
-              "prometheus": {
-                "monitor": {
-                  "enabled": true
-                }
-              }
-            },
-            "prometheus": {
-              "ingress": {
-                "annotations": {
-                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
-                },
-                "enabled": true,
-                "ingressClassName": "traefik",
-                "hosts": [
-                  "mon.odell.sh"
-                ],
-                "paths": [
-                  "/prometheus"
-                ],
-                "tls": [
-                  {
-                    "hosts": [
-                      "mon.odell.sh"
-                    ],
-                    "secretName": "mon-tls"
-                  }
-                ]
-              },
-              "prometheusSpec": {
-                "podMonitorSelectorNilUsesHelmValues": false,
-                "serviceMonitorSelectorNilUsesHelmValues": false,
-                "ruleSelectorNilUsesHelmValues": false,
-                "replicas": 2,
-                "resources": {
-                  "requests": {
-                    "cpu": "500m",
-                    "memory": "2300Mi"
-                  },
-                  "limits": {
-                    "cpu": "2",
-                    "memory": "4Gi"
-                  }
-                },
-                "externalUrl": "http://mon.odell.sh/prometheus/",
-                "routePrefix": "/prometheus/",
-                "retentionSize": "90GB",
-                "walCompression": true,
-                "storageSpec": {
-                  "volumeClaimTemplate": {
-                    "spec": {
-                      "accessModes": [
-                        "ReadWriteOnce"
-                      ],
-                      "resources": {
-                        "requests": {
-                          "storage": "100Gi"
-                        }
-                      },
-                      "storageClassName": "openebs-lvm"
-                    }
-                  }
-                }
-              },
-              "additionalScrapeConfigs": []
-            }
-          }
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "mon",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://prometheus-community.github.io/helm-charts"
-          }
-        }
-      }
-    },
-    "loki": {
-      "namespace": "mon",
-      "helmRepository": {
-        "name": "grafana",
-        "url": "https://grafana.github.io/helm-charts"
-      },
-      "chartName": "loki",
-      "releaseName": "loki",
-      "values": {
-        "grafana": {
-          "enabled": false
-        },
-        "isDefault": false,
-        "loki": {
-          "replicas": 2,
-          "persistence": {
-            "enabled": true,
-            "storageClassName": "openebs-lvm",
-            "accessModes": [
-              "ReadWriteOnce"
-            ],
-            "size": "50Gi"
-          },
-          "serviceMonitor": {
-            "enabled": true
-          },
-          "podManagementPolicy": "Parallel"
-        }
-      },
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "loki",
-            "namespace": "mon"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "loki",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "grafana"
-                }
-              }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "grafana": {
-              "enabled": false
-            },
-            "isDefault": false,
-            "loki": {
-              "replicas": 2,
-              "persistence": {
-                "enabled": true,
-                "storageClassName": "openebs-lvm",
-                "accessModes": [
-                  "ReadWriteOnce"
-                ],
-                "size": "50Gi"
-              },
-              "serviceMonitor": {
-                "enabled": true
-              },
-              "podManagementPolicy": "Parallel"
-            }
-          }
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "loki",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://grafana.github.io/helm-charts"
-          }
-        }
-      }
-    },
-    "connect": {
-      "namespace": "secrets",
-      "helmRepository": {
-        "name": "onepassword",
-        "url": "https://1password.github.io/connect-helm-charts"
-      },
-      "chartName": "connect",
-      "releaseName": "connect",
-      "values": {
-        "operator": {
-          "create": true,
-          "autoRestart": true,
-          "pollingInterval": 600,
-          "token": {
-            "name": "connect",
-            "key": "token"
-          }
-        },
-        "connect": {
-          "create": true,
-          "credentialsName": "opcreds",
-          "credentialsKey": "json",
-          "serviceType": "ClusterIP"
-        }
-      },
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "connect",
-            "namespace": "secrets"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "connect",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "onepassword"
-                }
-              }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "operator": {
-              "create": true,
-              "autoRestart": true,
-              "pollingInterval": 600,
-              "token": {
-                "name": "connect",
-                "key": "token"
-              }
-            },
-            "connect": {
-              "create": true,
-              "credentialsName": "opcreds",
-              "credentialsKey": "json",
-              "serviceType": "ClusterIP"
-            }
-          }
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "connect",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://1password.github.io/connect-helm-charts"
-          }
-        }
-      }
-    },
-    "openebs": {
-      "namespace": "storage",
-      "helmRepository": {
-        "name": "openebs",
-        "url": "https://openebs.github.io/charts"
-      },
-      "chartName": "openebs",
-      "releaseName": "openebs",
-      "values": {
-        "lvm-localpv": {
-          "enabled": true
-        }
-      },
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "openebs",
-            "namespace": "storage"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "openebs",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "openebs"
-                }
-              }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "lvm-localpv": {
-              "enabled": true
-            }
-          }
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "openebs",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://openebs.github.io/charts"
-          }
-        }
-      }
-    },
-    "smb-csi": {
-      "namespace": "storage",
-      "helmRepository": {
-        "name": "smb-csi",
-        "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
-      },
-      "chartName": "smb-csi",
-      "releaseName": "smb-csi",
-      "values": {},
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "smb-csi",
-            "namespace": "storage"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "smb-csi",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "smb-csi"
-                }
-              }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {}
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "smb-csi",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
-          }
-        }
-      }
-    },
-    "timescale": {
-      "namespace": "data",
-      "helmRepository": {
-        "name": "timescale",
-        "url": "https://charts.timescale.com"
-      },
-      "chartName": "timescale",
-      "releaseName": "timescale",
-      "values": {
-        "persistentVolumes": {
-          "data": {
-            "size": "100Gi",
-            "storageClass": "openebs-lvm"
-          },
-          "wal": {
-            "size": "30Gi",
-            "storageClass": "openebs-lvm"
-          }
-        },
-        "resources": {
-          "requests": {
-            "cpu": "1",
-            "memory": "2Gi"
-          }
-        },
-        "timescaledbTune": {
-          "args": {
-            "cpus": "1",
-            "memory": "2GB"
-          }
-        }
-      },
-      "flux": {
-        "helmRelease": {
-          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
-          "kind": "HelmRelease",
-          "metadata": {
-            "name": "timescale",
-            "namespace": "data"
-          },
-          "spec": {
-            "chart": {
-              "spec": {
-                "chart": "timescale",
-                "reconcileStrategy": "ChartVersion",
-                "sourceRef": {
-                  "kind": "HelmRepository",
-                  "name": "timescale"
-                }
-              }
-            },
-            "interval": "24h",
-            "values": {}
-          },
-          "values": {
-            "persistentVolumes": {
-              "data": {
-                "size": "100Gi",
-                "storageClass": "openebs-lvm"
-              },
-              "wal": {
-                "size": "30Gi",
-                "storageClass": "openebs-lvm"
-              }
-            },
-            "resources": {
-              "requests": {
-                "cpu": "1",
-                "memory": "2Gi"
-              }
-            },
-            "timescaledbTune": {
-              "args": {
-                "cpus": "1",
-                "memory": "2GB"
-              }
-            }
-          }
-        },
-        "helmRepo": {
-          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-          "kind": "HelmRepository",
-          "metadata": {
-            "name": "timescale",
-            "namespace": "flux-system"
-          },
-          "spec": {
-            "interval": "12h",
-            "url": "https://charts.timescale.com"
-          }
-        }
-      }
-    }
-  },
-  "helmRepository": {
-    "jetstack": {
-      "name": "jetstack",
-      "url": "https://charts.jetstack.io"
-    },
-    "external-dns": {
-      "name": "external-dns",
-      "url": "https://kubernetes-sigs.github.io/external-dns"
-    },
-    "grafana": {
-      "name": "grafana",
-      "url": "https://grafana.github.io/helm-charts"
-    },
-    "onepassword": {
-      "name": "onepassword",
-      "url": "https://1password.github.io/connect-helm-charts"
-    },
-    "prometheus-community": {
-      "name": "prometheus-community",
-      "url": "https://prometheus-community.github.io/helm-charts"
-    },
-    "smb-csi": {
-      "name": "smb-csi",
-      "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
-    },
-    "timescale": {
-      "name": "timescale",
-      "url": "https://charts.timescale.com"
-    }
-  },
   "cluster": {
-    "tmm": {
-      "name": "tmm",
-      "nodeType": "multipass",
-      "kubeType": "k3s",
-      "fqdn": "odell.sh",
-      "onePasswordVault": "homelab-tmm"
-    },
     "alpha": {
+      "fqdn": "alpha.odell.sh",
+      "kubeType": "k3s",
       "name": "alpha",
       "nodeType": "physical",
-      "kubeType": "k3s",
-      "fqdn": "alpha.odell.sh",
       "onePasswordVault": "homelab-alpha"
+    },
+    "tmm": {
+      "fqdn": "odell.sh",
+      "kubeType": "k3s",
+      "name": "tmm",
+      "nodeType": "multipass",
+      "onePasswordVault": "homelab-tmm"
     }
   },
   "flux": {
     "helmrepo": {
-      "jetstack": {
-        "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
-        "kind": "HelmRepository",
-        "metadata": {
-          "name": "jetstack",
-          "namespace": "flux-system"
-        },
-        "spec": {
-          "interval": "12h",
-          "url": "https://charts.jetstack.io"
-        }
-      },
       "external-dns": {
         "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
         "kind": "HelmRepository",
@@ -2054,6 +1118,18 @@
         "spec": {
           "interval": "12h",
           "url": "https://grafana.github.io/helm-charts"
+        }
+      },
+      "jetstack": {
+        "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+        "kind": "HelmRepository",
+        "metadata": {
+          "name": "jetstack",
+          "namespace": "flux-system"
+        },
+        "spec": {
+          "interval": "12h",
+          "url": "https://charts.jetstack.io"
         }
       },
       "onepassword": {
@@ -2106,39 +1182,941 @@
       }
     }
   },
+  "helmApp": {
+    "cert-manager": {
+      "chartName": "cert-manager",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "cert-manager",
+            "namespace": "network"
+          },
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "cert-manager",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "cert-manager"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {
+            "installCRDs": true,
+            "prometheus": {
+              "servicemonitor": {
+                "enabled": false
+              }
+            }
+          }
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "cert-manager",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://charts.jetstack.io"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "cert-manager",
+        "url": "https://charts.jetstack.io"
+      },
+      "namespace": "network",
+      "releaseName": "cert-manager",
+      "values": {
+        "installCRDs": true,
+        "prometheus": {
+          "servicemonitor": {
+            "enabled": false
+          }
+        }
+      }
+    },
+    "connect": {
+      "chartName": "connect",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "connect",
+            "namespace": "secrets"
+          },
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "connect",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "onepassword"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {
+            "connect": {
+              "create": true,
+              "credentialsKey": "json",
+              "credentialsName": "opcreds",
+              "serviceType": "ClusterIP"
+            },
+            "operator": {
+              "autoRestart": true,
+              "create": true,
+              "pollingInterval": 600,
+              "token": {
+                "key": "token",
+                "name": "connect"
+              }
+            }
+          }
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "connect",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://1password.github.io/connect-helm-charts"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "onepassword",
+        "url": "https://1password.github.io/connect-helm-charts"
+      },
+      "namespace": "secrets",
+      "releaseName": "connect",
+      "values": {
+        "connect": {
+          "create": true,
+          "credentialsKey": "json",
+          "credentialsName": "opcreds",
+          "serviceType": "ClusterIP"
+        },
+        "operator": {
+          "autoRestart": true,
+          "create": true,
+          "pollingInterval": 600,
+          "token": {
+            "key": "token",
+            "name": "connect"
+          }
+        }
+      }
+    },
+    "external-dns": {
+      "chartName": "external-dns",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "external-dns",
+            "namespace": "network"
+          },
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "external-dns",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "external-dns"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {
+            "env": [
+              {
+                "name": "AWS_ACCESS_KEY_ID",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "access_key",
+                    "name": "aws-certbot"
+                  }
+                }
+              },
+              {
+                "name": "AWS_SECRET_ACCESS_KEY",
+                "valueFrom": {
+                  "secretKeyRef": {
+                    "key": "secret_key",
+                    "name": "aws-certbot"
+                  }
+                }
+              }
+            ],
+            "policy": "sync",
+            "provider": "aws",
+            "txtOwnerId": "homelab",
+            "txtPrefix": "externaldns-"
+          }
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "external-dns",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://kubernetes-sigs.github.io/external-dns"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "external-dns",
+        "url": "https://kubernetes-sigs.github.io/external-dns"
+      },
+      "namespace": "network",
+      "releaseName": "external-dns",
+      "values": {
+        "env": [
+          {
+            "name": "AWS_ACCESS_KEY_ID",
+            "valueFrom": {
+              "secretKeyRef": {
+                "key": "access_key",
+                "name": "aws-certbot"
+              }
+            }
+          },
+          {
+            "name": "AWS_SECRET_ACCESS_KEY",
+            "valueFrom": {
+              "secretKeyRef": {
+                "key": "secret_key",
+                "name": "aws-certbot"
+              }
+            }
+          }
+        ],
+        "policy": "sync",
+        "provider": "aws",
+        "txtOwnerId": "homelab",
+        "txtPrefix": "externaldns-"
+      }
+    },
+    "loki": {
+      "chartName": "loki",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "loki",
+            "namespace": "mon"
+          },
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "loki",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "grafana"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {
+            "grafana": {
+              "enabled": false
+            },
+            "isDefault": false,
+            "loki": {
+              "persistence": {
+                "accessModes": [
+                  "ReadWriteOnce"
+                ],
+                "enabled": true,
+                "size": "50Gi",
+                "storageClassName": "openebs-lvm"
+              },
+              "podManagementPolicy": "Parallel",
+              "replicas": 2,
+              "serviceMonitor": {
+                "enabled": true
+              }
+            }
+          }
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "loki",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://grafana.github.io/helm-charts"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "grafana",
+        "url": "https://grafana.github.io/helm-charts"
+      },
+      "namespace": "mon",
+      "releaseName": "loki",
+      "values": {
+        "grafana": {
+          "enabled": false
+        },
+        "isDefault": false,
+        "loki": {
+          "persistence": {
+            "accessModes": [
+              "ReadWriteOnce"
+            ],
+            "enabled": true,
+            "size": "50Gi",
+            "storageClassName": "openebs-lvm"
+          },
+          "podManagementPolicy": "Parallel",
+          "replicas": 2,
+          "serviceMonitor": {
+            "enabled": true
+          }
+        }
+      }
+    },
+    "mon": {
+      "chartName": "mon",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "mon",
+            "namespace": "mon"
+          },
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "mon",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "prometheus-community"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {
+            "alertmanager": {
+              "alertmanagerSpec": {
+                "externalUrl": "http://mon.odell.sh/alertmanager/",
+                "routePrefix": "/alertmanager/"
+              },
+              "ingress": {
+                "annotations": {
+                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+                },
+                "enabled": true,
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "ingressClassName": "traefik",
+                "paths": [
+                  "/alertmanager"
+                ],
+                "tls": [
+                  {
+                    "hosts": [
+                      "mon.odell.sh"
+                    ],
+                    "secretName": "mon-tls"
+                  }
+                ]
+              }
+            },
+            "defaultRules": {
+              "disabled": {
+                "KubeAggregatedAPIDown": true,
+                "Watchdog": true
+              },
+              "rules": {
+                "etcd": false,
+                "kubeScheduler": false
+              }
+            },
+            "grafana": {
+              "deploymentStrategy": {
+                "type": "Recreate"
+              },
+              "enabled": true,
+              "grafana.ini": {
+                "analytics": {
+                  "check_for_updates": false
+                },
+                "server": {
+                  "domain": "mon.odell.sh",
+                  "enable_gzip": true,
+                  "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
+                  "serve_from_sub_path": true
+                }
+              },
+              "ingress": {
+                "annotations": {
+                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+                },
+                "enabled": true,
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "ingressClassName": "traefik",
+                "pathType": "Prefix",
+                "paths": [
+                  "/grafana"
+                ],
+                "tls": [
+                  {
+                    "hosts": [
+                      "mon.odell.sh"
+                    ],
+                    "secretName": "mon-tls"
+                  }
+                ]
+              },
+              "persistence": {
+                "accessModes": [
+                  "ReadWriteOnce"
+                ],
+                "enabled": true,
+                "size": "10Gi",
+                "storageClassName": "smb",
+                "type": "pvc"
+              },
+              "serviceMonitor": {
+                "enabled": true
+              },
+              "sidecar": {
+                "dashboards": {
+                  "provider": {
+                    "allowUiUpdates": true
+                  },
+                  "searchNamespace": "ALL"
+                }
+              }
+            },
+            "prometheus": {
+              "additionalScrapeConfigs": [],
+              "ingress": {
+                "annotations": {
+                  "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+                },
+                "enabled": true,
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "ingressClassName": "traefik",
+                "paths": [
+                  "/prometheus"
+                ],
+                "tls": [
+                  {
+                    "hosts": [
+                      "mon.odell.sh"
+                    ],
+                    "secretName": "mon-tls"
+                  }
+                ]
+              },
+              "prometheusSpec": {
+                "externalUrl": "http://mon.odell.sh/prometheus/",
+                "podMonitorSelectorNilUsesHelmValues": false,
+                "replicas": 2,
+                "resources": {
+                  "limits": {
+                    "cpu": "2",
+                    "memory": "4Gi"
+                  },
+                  "requests": {
+                    "cpu": "500m",
+                    "memory": "2300Mi"
+                  }
+                },
+                "retentionSize": "90GB",
+                "routePrefix": "/prometheus/",
+                "ruleSelectorNilUsesHelmValues": false,
+                "serviceMonitorSelectorNilUsesHelmValues": false,
+                "storageSpec": {
+                  "volumeClaimTemplate": {
+                    "spec": {
+                      "accessModes": [
+                        "ReadWriteOnce"
+                      ],
+                      "resources": {
+                        "requests": {
+                          "storage": "100Gi"
+                        }
+                      },
+                      "storageClassName": "openebs-lvm"
+                    }
+                  }
+                },
+                "walCompression": true
+              }
+            },
+            "prometheus-node-exporter": {
+              "prometheus": {
+                "monitor": {
+                  "enabled": true
+                }
+              }
+            }
+          }
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "mon",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://prometheus-community.github.io/helm-charts"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "prometheus-community",
+        "url": "https://prometheus-community.github.io/helm-charts"
+      },
+      "namespace": "mon",
+      "releaseName": "mon",
+      "values": {
+        "alertmanager": {
+          "alertmanagerSpec": {
+            "externalUrl": "http://mon.odell.sh/alertmanager/",
+            "routePrefix": "/alertmanager/"
+          },
+          "ingress": {
+            "annotations": {
+              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+            },
+            "enabled": true,
+            "hosts": [
+              "mon.odell.sh"
+            ],
+            "ingressClassName": "traefik",
+            "paths": [
+              "/alertmanager"
+            ],
+            "tls": [
+              {
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "secretName": "mon-tls"
+              }
+            ]
+          }
+        },
+        "defaultRules": {
+          "disabled": {
+            "KubeAggregatedAPIDown": true,
+            "Watchdog": true
+          },
+          "rules": {
+            "etcd": false,
+            "kubeScheduler": false
+          }
+        },
+        "grafana": {
+          "deploymentStrategy": {
+            "type": "Recreate"
+          },
+          "enabled": true,
+          "grafana.ini": {
+            "analytics": {
+              "check_for_updates": false
+            },
+            "server": {
+              "domain": "mon.odell.sh",
+              "enable_gzip": true,
+              "root_url": "%(protocol)s://%(domain)s:%(http_port)s/grafana/",
+              "serve_from_sub_path": true
+            }
+          },
+          "ingress": {
+            "annotations": {
+              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+            },
+            "enabled": true,
+            "hosts": [
+              "mon.odell.sh"
+            ],
+            "ingressClassName": "traefik",
+            "pathType": "Prefix",
+            "paths": [
+              "/grafana"
+            ],
+            "tls": [
+              {
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "secretName": "mon-tls"
+              }
+            ]
+          },
+          "persistence": {
+            "accessModes": [
+              "ReadWriteOnce"
+            ],
+            "enabled": true,
+            "size": "10Gi",
+            "storageClassName": "smb",
+            "type": "pvc"
+          },
+          "serviceMonitor": {
+            "enabled": true
+          },
+          "sidecar": {
+            "dashboards": {
+              "provider": {
+                "allowUiUpdates": true
+              },
+              "searchNamespace": "ALL"
+            }
+          }
+        },
+        "prometheus": {
+          "additionalScrapeConfigs": [],
+          "ingress": {
+            "annotations": {
+              "cert-manager.io/cluster-issuer": "letsencrypt-dns"
+            },
+            "enabled": true,
+            "hosts": [
+              "mon.odell.sh"
+            ],
+            "ingressClassName": "traefik",
+            "paths": [
+              "/prometheus"
+            ],
+            "tls": [
+              {
+                "hosts": [
+                  "mon.odell.sh"
+                ],
+                "secretName": "mon-tls"
+              }
+            ]
+          },
+          "prometheusSpec": {
+            "externalUrl": "http://mon.odell.sh/prometheus/",
+            "podMonitorSelectorNilUsesHelmValues": false,
+            "replicas": 2,
+            "resources": {
+              "limits": {
+                "cpu": "2",
+                "memory": "4Gi"
+              },
+              "requests": {
+                "cpu": "500m",
+                "memory": "2300Mi"
+              }
+            },
+            "retentionSize": "90GB",
+            "routePrefix": "/prometheus/",
+            "ruleSelectorNilUsesHelmValues": false,
+            "serviceMonitorSelectorNilUsesHelmValues": false,
+            "storageSpec": {
+              "volumeClaimTemplate": {
+                "spec": {
+                  "accessModes": [
+                    "ReadWriteOnce"
+                  ],
+                  "resources": {
+                    "requests": {
+                      "storage": "100Gi"
+                    }
+                  },
+                  "storageClassName": "openebs-lvm"
+                }
+              }
+            },
+            "walCompression": true
+          }
+        },
+        "prometheus-node-exporter": {
+          "prometheus": {
+            "monitor": {
+              "enabled": true
+            }
+          }
+        }
+      }
+    },
+    "openebs": {
+      "chartName": "openebs",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "openebs",
+            "namespace": "storage"
+          },
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "openebs",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "openebs"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {
+            "lvm-localpv": {
+              "enabled": true
+            }
+          }
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "openebs",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://openebs.github.io/charts"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "openebs",
+        "url": "https://openebs.github.io/charts"
+      },
+      "namespace": "storage",
+      "releaseName": "openebs",
+      "values": {
+        "lvm-localpv": {
+          "enabled": true
+        }
+      }
+    },
+    "smb-csi": {
+      "chartName": "smb-csi",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "smb-csi",
+            "namespace": "storage"
+          },
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "smb-csi",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "smb-csi"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {}
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "smb-csi",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "smb-csi",
+        "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
+      },
+      "namespace": "storage",
+      "releaseName": "smb-csi",
+      "values": {}
+    },
+    "timescale": {
+      "chartName": "timescale",
+      "flux": {
+        "helmRelease": {
+          "apiVersion": "helm.toolkit.fluxcd.io/v2beta1",
+          "kind": "HelmRelease",
+          "metadata": {
+            "name": "timescale",
+            "namespace": "data"
+          },
+          "spec": {
+            "chart": {
+              "spec": {
+                "chart": "timescale",
+                "reconcileStrategy": "ChartVersion",
+                "sourceRef": {
+                  "kind": "HelmRepository",
+                  "name": "timescale"
+                }
+              }
+            },
+            "interval": "24h",
+            "values": {}
+          },
+          "values": {
+            "persistentVolumes": {
+              "data": {
+                "size": "100Gi",
+                "storageClass": "openebs-lvm"
+              },
+              "wal": {
+                "size": "30Gi",
+                "storageClass": "openebs-lvm"
+              }
+            },
+            "resources": {
+              "requests": {
+                "cpu": "1",
+                "memory": "2Gi"
+              }
+            },
+            "timescaledbTune": {
+              "args": {
+                "cpus": "1",
+                "memory": "2GB"
+              }
+            }
+          }
+        },
+        "helmRepo": {
+          "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
+          "kind": "HelmRepository",
+          "metadata": {
+            "name": "timescale",
+            "namespace": "flux-system"
+          },
+          "spec": {
+            "interval": "12h",
+            "url": "https://charts.timescale.com"
+          }
+        }
+      },
+      "helmRepository": {
+        "name": "timescale",
+        "url": "https://charts.timescale.com"
+      },
+      "namespace": "data",
+      "releaseName": "timescale",
+      "values": {
+        "persistentVolumes": {
+          "data": {
+            "size": "100Gi",
+            "storageClass": "openebs-lvm"
+          },
+          "wal": {
+            "size": "30Gi",
+            "storageClass": "openebs-lvm"
+          }
+        },
+        "resources": {
+          "requests": {
+            "cpu": "1",
+            "memory": "2Gi"
+          }
+        },
+        "timescaledbTune": {
+          "args": {
+            "cpus": "1",
+            "memory": "2GB"
+          }
+        }
+      }
+    }
+  },
+  "helmRepository": {
+    "external-dns": {
+      "name": "external-dns",
+      "url": "https://kubernetes-sigs.github.io/external-dns"
+    },
+    "grafana": {
+      "name": "grafana",
+      "url": "https://grafana.github.io/helm-charts"
+    },
+    "jetstack": {
+      "name": "jetstack",
+      "url": "https://charts.jetstack.io"
+    },
+    "onepassword": {
+      "name": "onepassword",
+      "url": "https://1password.github.io/connect-helm-charts"
+    },
+    "prometheus-community": {
+      "name": "prometheus-community",
+      "url": "https://prometheus-community.github.io/helm-charts"
+    },
+    "smb-csi": {
+      "name": "smb-csi",
+      "url": "https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts"
+    },
+    "timescale": {
+      "name": "timescale",
+      "url": "https://charts.timescale.com"
+    }
+  },
   "kubernetes": {
     "namespace": {
-      "storage": {
+      "data": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
           "labels": {
-            "kubernetes.io/metadata.name": "storage",
+            "kubernetes.io/metadata.name": "data",
             "secrets-injection": "enabled"
           },
-          "name": "storage"
-        }
-      },
-      "secrets": {
-        "apiVersion": "v1",
-        "kind": "Namespace",
-        "metadata": {
-          "labels": {
-            "kubernetes.io/metadata.name": "secrets",
-            "secrets-injection": "enabled"
-          },
-          "name": "secrets"
-        }
-      },
-      "network": {
-        "apiVersion": "v1",
-        "kind": "Namespace",
-        "metadata": {
-          "labels": {
-            "kubernetes.io/metadata.name": "network",
-            "secrets-injection": "enabled"
-          },
-          "name": "network"
+          "name": "data"
         }
       },
       "ha": {
@@ -2163,15 +2141,37 @@
           "name": "mon"
         }
       },
-      "data": {
+      "network": {
         "apiVersion": "v1",
         "kind": "Namespace",
         "metadata": {
           "labels": {
-            "kubernetes.io/metadata.name": "data",
+            "kubernetes.io/metadata.name": "network",
             "secrets-injection": "enabled"
           },
-          "name": "data"
+          "name": "network"
+        }
+      },
+      "secrets": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "labels": {
+            "kubernetes.io/metadata.name": "secrets",
+            "secrets-injection": "enabled"
+          },
+          "name": "secrets"
+        }
+      },
+      "storage": {
+        "apiVersion": "v1",
+        "kind": "Namespace",
+        "metadata": {
+          "labels": {
+            "kubernetes.io/metadata.name": "storage",
+            "secrets-injection": "enabled"
+          },
+          "name": "storage"
         }
       }
     }
