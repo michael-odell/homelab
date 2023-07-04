@@ -1,0 +1,40 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: timescale
+  namespace: data
+spec:
+  chart:
+    spec:
+      chart: timescale
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: timescale
+  interval: 24h
+  values: {}
+values:
+  persistentVolumes:
+    data:
+      size: 100Gi
+      storageClass: openebs-lvm
+    wal:
+      size: 30Gi
+      storageClass: openebs-lvm
+  resources:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+  timescaledbTune:
+    args:
+      cpus: "1"
+      memory: 2GB
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: timescale
+  namespace: flux-system
+spec:
+  interval: 12h
+  url: https://charts.timescale.com

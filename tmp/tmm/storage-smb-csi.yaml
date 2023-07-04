@@ -1,0 +1,25 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: smb-csi
+  namespace: storage
+spec:
+  chart:
+    spec:
+      chart: smb-csi
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: smb-csi
+  interval: 24h
+  values: {}
+values: {}
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: smb-csi
+  namespace: flux-system
+spec:
+  interval: 12h
+  url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts

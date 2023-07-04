@@ -1,0 +1,39 @@
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: loki
+  namespace: mon
+spec:
+  chart:
+    spec:
+      chart: loki
+      reconcileStrategy: ChartVersion
+      sourceRef:
+        kind: HelmRepository
+        name: grafana
+  interval: 24h
+  values: {}
+values:
+  grafana:
+    enabled: false
+  isDefault: false
+  loki:
+    replicas: 2
+    persistence:
+      enabled: true
+      storageClassName: openebs-lvm
+      accessModes:
+        - ReadWriteOnce
+      size: 50Gi
+    serviceMonitor:
+      enabled: true
+    podManagementPolicy: Parallel
+---
+apiVersion: source.toolkit.fluxcd.io/v1beta2
+kind: HelmRepository
+metadata:
+  name: loki
+  namespace: flux-system
+spec:
+  interval: 12h
+  url: https://grafana.github.io/helm-charts

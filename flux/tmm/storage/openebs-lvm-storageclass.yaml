@@ -1,0 +1,14 @@
+---
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: openebs-lvm
+parameters:
+  # ref: https://github.com/openebs/lvm-localpv/blob/develop/docs/storageclasses.md
+  storage: "lvm"
+  volgroup: "kube"
+  fsType: btrfs  # ext4 is supported too, among others
+allowVolumeExpansion: true
+provisioner: local.csi.openebs.io
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain

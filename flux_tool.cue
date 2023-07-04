@@ -5,7 +5,6 @@ import (
 	"encoding/yaml"
 )
 
-let _FLUX = flux
 command: flux: {
 
 	fluxOutputDirectory: "tmp"
@@ -20,12 +19,14 @@ command: flux: {
 				path: clusterDir
 			}
 
-			for h in _FLUX.helmrepo {
-				let name = h.metadata.name
-				"\(name)": file.Create & {
+			for app in helmApp {
+				let name = app.releaseName
+				let namespace = app.namespace
+
+				"\(namespace)-\(name)": file.Create & {
 					$after:   mkdir
-					filename: "\(clusterDir)/\(name).yaml"
-					contents: yaml.Marshal(h)
+					filename: "\(clusterDir)/\(namespace)-\(name).yaml"
+					contents: yaml.MarshalStream([ app.flux.helmRelease, app.flux.helmRepo])
 				}
 			}
 

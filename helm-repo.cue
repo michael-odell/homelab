@@ -5,7 +5,7 @@ helmRepository: [NAME=_]: {
 }
 
 #HelmRepository: {
-	name: string & =~"[-a-z0-9]+"
+	name: #DnsSafeName
 
 	// URLs for helm repos shouldn't end in slash
 	url: string & =~"^https?://.*[^/]$"
