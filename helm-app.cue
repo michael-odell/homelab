@@ -28,8 +28,8 @@ helmApp: [NAME=_]: APP={
 			}
 		}
 
-		helmRepo: {
-			#FluxHelmRepo
+		helmRepository: {
+			#FluxHelmRepository
 			metadata: {
 				name:      NAME
 				namespace: "flux-system"
@@ -49,7 +49,10 @@ helmApp: [NAME=_]: APP={
 	values: {...}
 	// May also want some cluster-specific or type-specific values here
 
-	flux: {...}
+	flux: {
+		helmRelease:    #FluxHelmRelease
+		helmRepository: #FluxHelmRepository
+	}
 }
 
 #FluxHelmRelease: {

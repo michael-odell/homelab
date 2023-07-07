@@ -36,7 +36,7 @@ helmApp:
             prometheus:
               servicemonitor:
                 enabled: false
-      helmRepo:
+      helmRepository:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:
@@ -87,7 +87,7 @@ helmApp:
               token:
                 key: token
                 name: connect
-      helmRepo:
+      helmRepository:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:
@@ -149,7 +149,7 @@ helmApp:
             provider: aws
             txtOwnerId: homelab
             txtPrefix: externaldns-
-      helmRepo:
+      helmRepository:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:
@@ -213,7 +213,7 @@ helmApp:
               replicas: 2
               serviceMonitor:
                 enabled: true
-      helmRepo:
+      helmRepository:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:
@@ -370,7 +370,7 @@ helmApp:
               prometheus:
                 monitor:
                   enabled: true
-      helmRepo:
+      helmRepository:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:
@@ -515,7 +515,7 @@ helmApp:
           values:
             lvm-localpv:
               enabled: true
-      helmRepo:
+      helmRepository:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:
@@ -552,7 +552,7 @@ helmApp:
                 namespace: flux-system
           interval: 24h
           values: {}
-      helmRepo:
+      helmRepository:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:
@@ -602,7 +602,7 @@ helmApp:
               args:
                 cpus: '1'
                 memory: 2GB
-      helmRepo:
+      helmRepository:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:

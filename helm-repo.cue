@@ -11,7 +11,7 @@ helmRepository: [NAME=_]: {
 	url: string & =~"^https?://.*[^/]$"
 }
 
-#FluxHelmRepo: {
+#FluxHelmRepository: {
 	apiVersion: "source.toolkit.fluxcd.io/v1beta2"
 	kind:       "HelmRepository"
 

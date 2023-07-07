@@ -26,7 +26,7 @@ command: flux: {
 				"\(namespace)-\(name)": file.Create & {
 					$after:   mkdir
 					filename: "\(clusterDir)/\(namespace)-\(name).yaml"
-					contents: yaml.MarshalStream([ app.flux.helmRelease, app.flux.helmRepo])
+					contents: yaml.MarshalStream([ app.flux.helmRelease, app.flux.helmRepository])
 				}
 			}
 

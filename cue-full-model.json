@@ -49,7 +49,7 @@
             }
           }
         },
-        "helmRepo": {
+        "helmRepository": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
@@ -119,7 +119,7 @@
             }
           }
         },
-        "helmRepo": {
+        "helmRepository": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
@@ -207,7 +207,7 @@
             }
           }
         },
-        "helmRepo": {
+        "helmRepository": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
@@ -299,7 +299,7 @@
             }
           }
         },
-        "helmRepo": {
+        "helmRepository": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
@@ -529,7 +529,7 @@
             }
           }
         },
-        "helmRepo": {
+        "helmRepository": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
@@ -743,7 +743,7 @@
             }
           }
         },
-        "helmRepo": {
+        "helmRepository": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
@@ -794,7 +794,7 @@
             "values": {}
           }
         },
-        "helmRepo": {
+        "helmRepository": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
@@ -864,7 +864,7 @@
             }
           }
         },
-        "helmRepo": {
+        "helmRepository": {
           "apiVersion": "source.toolkit.fluxcd.io/v1beta2",
           "kind": "HelmRepository",
           "metadata": {
