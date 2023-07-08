@@ -16,6 +16,8 @@ cluster: alpha: {
 
 	fqdn:             "alpha.odell.sh"
 	onePasswordVault: "homelab-alpha"
+
+	app: openebs: helmApp["openebs"]
 }
 
 #Cluster: {
@@ -26,6 +28,16 @@ cluster: alpha: {
 	fqdn: string
 
 	onePasswordVault: #DnsSafeName
+
+	// Apps are grouped by name and must have the name of one of the apps from the top level
+	app: [APPNAME=_]: {
+		// Apps here must be one of the apps named at the topLevel
+		name: APPNAME & or([ for x in helmApp {x.name}])
+
+		// TODO this doesn't work as I expect right now -- I'm specifying it above, but should I?
+		//helmApp[APPNAME]
+	}
+
 }
 
 #DnsSafeName: string & =~"[-a-z0-9]+"

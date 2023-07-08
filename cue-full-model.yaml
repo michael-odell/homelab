@@ -1,5 +1,45 @@
 cluster:
   alpha:
+    app:
+      openebs:
+        chartName: openebs
+        flux:
+          helmRelease:
+            apiVersion: helm.toolkit.fluxcd.io/v2beta1
+            kind: HelmRelease
+            metadata:
+              name: openebs
+              namespace: storage
+            spec:
+              chart:
+                spec:
+                  chart: openebs
+                  reconcileStrategy: ChartVersion
+                  sourceRef:
+                    kind: HelmRepository
+                    name: openebs
+                    namespace: flux-system
+              interval: 24h
+              values:
+                lvm-localpv:
+                  enabled: true
+          helmRepository:
+            apiVersion: source.toolkit.fluxcd.io/v1beta2
+            kind: HelmRepository
+            metadata:
+              name: openebs
+              namespace: flux-system
+            spec:
+              interval: 12h
+              url: https://openebs.github.io/charts
+        helmRepository:
+          name: openebs
+          url: https://openebs.github.io/charts
+        namespace: storage
+        releaseName: openebs
+        values:
+          lvm-localpv:
+            enabled: true
     fqdn: alpha.odell.sh
     kubeType: k3s
     name: alpha
