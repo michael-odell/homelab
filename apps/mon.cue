@@ -1,6 +1,6 @@
-package homelab
+package apps
 
-helmApp: mon: {
+mon: {
 	namespace: "mon"
 	chartName: "kube-prometheus-stack"
 

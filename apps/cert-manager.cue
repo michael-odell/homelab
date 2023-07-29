@@ -1,6 +1,6 @@
-package homelab
+package apps
 
-helmApp: "cert-manager": {
+"cert-manager": {
 	namespace: "network"
 
 	helmRepository: {

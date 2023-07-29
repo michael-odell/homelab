@@ -1,6 +1,6 @@
-package homelab
+package apps
 
-helmApp: "smb-csi": {
+"smb": {
 	namespace: "storage"
 	chartName: "csi-driver-smb"
 

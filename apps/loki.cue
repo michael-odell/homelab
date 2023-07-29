@@ -1,6 +1,6 @@
-package homelab
+package apps
 
-helmApp: loki: {
+loki: {
 	namespace: "mon"
 	chartName: "loki-stack"
 

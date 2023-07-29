@@ -67,8 +67,9 @@ helmApp: [NAME=_]: APP={
 			chart:             #DnsSafeName
 			reconcileStrategy: "ChartVersion"
 			sourceRef: {
-				kind: "HelmRepository"
-				name: #DnsSafeName
+				kind:      "HelmRepository"
+				name:      #DnsSafeName
+				namespace: "flux-system"
 			}
 		}
 		interval: string | *"24h"

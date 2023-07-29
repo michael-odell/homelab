@@ -1,9 +1,5 @@
 package homelab
 
-helmRepository: [NAME=_]: {
-	#HelmRepository
-}
-
 #HelmRepository: {
 	name: #DnsSafeName
 
@@ -16,8 +12,7 @@ helmRepository: [NAME=_]: {
 	kind:       "HelmRepository"
 
 	metadata: {
-		name: string
-		// TODO move all of them to flux-system
+		name:      string
 		namespace: string | "flux-system"
 	}
 

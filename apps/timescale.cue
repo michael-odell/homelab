@@ -1,6 +1,6 @@
-package homelab
+package apps
 
-helmApp: timescale: {
+timescale: {
 	namespace: "data"
 	chartName: "timescaledb-single"
 

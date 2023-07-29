@@ -1,6 +1,6 @@
-package homelab
+package apps
 
-helmApp: openebs: {
+openebs: {
 	namespace: "storage"
 	helmRepository: {
 		name: "openebs"

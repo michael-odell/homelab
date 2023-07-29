@@ -62,9 +62,6 @@ spec:
             port: 8123
           timeoutSeconds: 1
 
-        securityContext:
-          privileged: null
-
         startupProbe:
           failureThreshold: 30
           initialDelaySeconds: 0

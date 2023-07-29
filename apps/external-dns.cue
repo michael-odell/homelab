@@ -1,6 +1,6 @@
-package homelab
+package apps
 
-helmApp: "external-dns": {
+"external-dns": {
 	namespace: "network"
 
 	helmRepository: {
