@@ -36,6 +36,7 @@ helmApp: [NAME=_]: APP={
 			}
 			spec: url: APP.helmRepository.url
 		}
+
 	}
 }
 
@@ -52,6 +53,8 @@ helmApp: [NAME=_]: APP={
 	flux: {
 		helmRelease:    #FluxHelmRelease
 		helmRepository: #FluxHelmRepository
+
+		kubernetes: #RawKubernetesManifests
 	}
 }
 

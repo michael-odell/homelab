@@ -16,6 +16,6 @@ alpha: {
 	app: "external-dns": apps["external-dns"]
 	app: mon:            apps["mon"]
 	app: loki:           apps["loki"]
-	app: smb:            apps["smb"]
+	app: "smb-csi":      apps["smb-csi"]
 	app: timescale:      apps["timescale"]
 }

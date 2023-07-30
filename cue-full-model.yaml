@@ -168,8 +168,25 @@ cluster:
             prometheus:
               monitor:
                 enabled: true
-      smb:
+      smb-csi:
         chartName: csi-driver-smb
+        flux:
+          kubernetes:
+            v1:
+              Service:
+                smb-csi:
+                  apiVersion: v1
+                  kind: Service
+                  metadata:
+                    name: smb-csi
+                    namespace: storage
+                  spec:
+                    ports:
+                      - port: 29644
+                        targetPort: 29644
+                    selector:
+                      app: smb-csi
+                    type: ClusterIP
         helmRepository:
           name: smb-csi
           url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
@@ -378,8 +395,25 @@ cluster:
         values:
           lvm-localpv:
             enabled: true
-      smb:
+      smb-csi:
         chartName: csi-driver-smb
+        flux:
+          kubernetes:
+            v1:
+              Service:
+                smb-csi:
+                  apiVersion: v1
+                  kind: Service
+                  metadata:
+                    name: smb-csi
+                    namespace: storage
+                  spec:
+                    ports:
+                      - port: 29644
+                        targetPort: 29644
+                    selector:
+                      app: smb-csi
+                    type: ClusterIP
         helmRepository:
           name: smb-csi
           url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
@@ -445,6 +479,7 @@ helmApp:
         spec:
           interval: 12h
           url: https://charts.jetstack.io
+      kubernetes: {}
     helmRepository:
       name: cert-manager
       url: https://charts.jetstack.io
@@ -496,6 +531,7 @@ helmApp:
         spec:
           interval: 12h
           url: https://1password.github.io/connect-helm-charts
+      kubernetes: {}
     helmRepository:
       name: onepassword
       url: https://1password.github.io/connect-helm-charts
@@ -558,6 +594,7 @@ helmApp:
         spec:
           interval: 12h
           url: https://kubernetes-sigs.github.io/external-dns
+      kubernetes: {}
     helmRepository:
       name: external-dns
       url: https://kubernetes-sigs.github.io/external-dns
@@ -622,6 +659,7 @@ helmApp:
         spec:
           interval: 12h
           url: https://grafana.github.io/helm-charts
+      kubernetes: {}
     helmRepository:
       name: grafana
       url: https://grafana.github.io/helm-charts
@@ -779,6 +817,7 @@ helmApp:
         spec:
           interval: 12h
           url: https://prometheus-community.github.io/helm-charts
+      kubernetes: {}
     helmRepository:
       name: prometheus-community
       url: https://prometheus-community.github.io/helm-charts
@@ -924,6 +963,7 @@ helmApp:
         spec:
           interval: 12h
           url: https://openebs.github.io/charts
+      kubernetes: {}
     helmRepository:
       name: openebs
       url: https://openebs.github.io/charts
@@ -932,14 +972,14 @@ helmApp:
     values:
       lvm-localpv:
         enabled: true
-  smb:
+  smb-csi:
     chartName: csi-driver-smb
     flux:
       helmRelease:
         apiVersion: helm.toolkit.fluxcd.io/v2beta1
         kind: HelmRelease
         metadata:
-          name: smb
+          name: smb-csi
           namespace: storage
         spec:
           chart:
@@ -956,16 +996,32 @@ helmApp:
         apiVersion: source.toolkit.fluxcd.io/v1beta2
         kind: HelmRepository
         metadata:
-          name: smb
+          name: smb-csi
           namespace: flux-system
         spec:
           interval: 12h
           url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
+      kubernetes:
+        v1:
+          Service:
+            smb-csi:
+              apiVersion: v1
+              kind: Service
+              metadata:
+                name: smb-csi
+                namespace: storage
+              spec:
+                ports:
+                  - port: 29644
+                    targetPort: 29644
+                selector:
+                  app: smb-csi
+                type: ClusterIP
     helmRepository:
       name: smb-csi
       url: https://raw.githubusercontent.com/kubernetes-csi/csi-driver-smb/master/charts
     namespace: storage
-    releaseName: smb
+    releaseName: smb-csi
     values: {}
   timescale:
     chartName: timescaledb-single
@@ -1011,6 +1067,7 @@ helmApp:
         spec:
           interval: 12h
           url: https://charts.timescale.com
+      kubernetes: {}
     helmRepository:
       name: timescale
       url: https://charts.timescale.com

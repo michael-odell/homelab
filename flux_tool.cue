@@ -27,10 +27,6 @@ command: flux: {
 					$after:   mkdir
 					filename: "\(clusterDir)/\(namespace)-\(name).yaml"
 					contents: yaml.MarshalStream([ app.flux.helmRelease, app.flux.helmRepository])
-					//contents: yaml.MarshalStream([app.flux.helmRepository])
-					//contents: yaml.MarshalStream([app.flux.helmRelease])
-					//contents: yaml.Marshal(app.flux.helmRepository)
-					//contents: yaml.Marshal(app.flux.helmRelease)
 				}
 			}
 

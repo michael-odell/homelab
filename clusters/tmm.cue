@@ -17,6 +17,6 @@ tmm: {
 	app: mon:            apps["mon"]
 	app: loki:           apps["loki"]
 	app: openebs:        apps["openebs"]
-	app: smb:            apps["smb"]
+	app: "smb-csi":      apps["smb-csi"]
 	app: timescale:      apps["timescale"]
 }
