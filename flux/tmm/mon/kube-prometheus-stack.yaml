@@ -88,7 +88,7 @@ spec:
       persistence:
         enabled: true
         type: pvc
-        storageClassName: smb
+        storageClassName: openebs-lvm
         accessModes:
           - ReadWriteOnce
         size: 10Gi
