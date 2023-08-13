@@ -18,6 +18,7 @@ spec:
     spec:
       chart: openebs
       reconcileStrategy: ChartVersion
+      version: v1.1.0
       sourceRef:
         kind: HelmRepository
         name: openebs
