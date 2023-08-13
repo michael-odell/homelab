@@ -28,6 +28,7 @@ spec:
       enabled: true
 
     crd:
+      enableInstall: false
       volumeSnapshot: false
 
 ---
