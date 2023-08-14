@@ -55,7 +55,7 @@ chmod +x get-k3s.sh
 
 echo "Provisioning ${FIRST_HOST} at ${HOSTREF[$FIRST_HOST]} as master..."
 scp get-k3s.sh "${LOGIN_USER}@${HOSTREF[$FIRST_HOST]}:"
-echo ssh -tl "${LOGIN_USER}" "${HOSTREF[$FIRST_HOST]}" \
+ssh -tl "${LOGIN_USER}" "${HOSTREF[$FIRST_HOST]}" \
     sudo ./get-k3s.sh server \
             --cluster-init \
             --token "${SECRET}" \
@@ -64,29 +64,30 @@ echo ssh -tl "${LOGIN_USER}" "${HOSTREF[$FIRST_HOST]}" \
             --flannel-backend=none \
             --disable-network-policy
 
-echo "Waiting..."
-read
-KUBE_SERVER_URL=https://${HOSTREF[$FIRST_HOST]}:6443
+if [[ ${#HOSTREF[@]} -gt 1 ]] ; then
 
+    KUBE_SERVER_URL=https://${HOSTREF[$FIRST_HOST]}:6443
 
-# First is taken care of -- now take care of the rest
-unset HOSTNAMES[0]
-for host in "${HOSTNAMES[@]}" ; do
-    echo "Provisioning ${host} at ${HOSTREF[$host]}..."
+    # First is taken care of -- now take care of the rest
+    unset HOSTNAMES[0]
+    for host in "${HOSTNAMES[@]}" ; do
+        echo "Provisioning ${host} at ${HOSTREF[$host]}..."
 
-    scp get-k3s.sh "${LOGIN_USER}@${HOSTREF[$host]}:"
-    echo ssh -tl "${LOGIN_USER}" "${HOSTREF[$host]}" \
-        sudo ./get-k3s.sh server \
-            --server "${KUBE_SERVER_URL}" \
-            --token "${SECRET}" \
-            --node-name ${host} \
-            --node-ip ${HOSTREF[$host]} \
-            --flannel-backend=none \
-            --disable-network-policy
+        scp get-k3s.sh "${LOGIN_USER}@${HOSTREF[$host]}:"
+        echo ssh -tl "${LOGIN_USER}" "${HOSTREF[$host]}" \
+            sudo ./get-k3s.sh server \
+                --server "${KUBE_SERVER_URL}" \
+                --token "${SECRET}" \
+                --node-name ${host} \
+                --node-ip ${HOSTREF[$host]} \
+                --flannel-backend=none \
+                --disable-network-policy
 
-    echo "Waiting..."
-    read
-done
+        echo "Waiting..."
+        read
+    done
+
+fi
 
 # Collect the kube admin cert from k3s, replacing the localhost IP with the IP of the first host
 ssh "${LOGIN_USER}@${HOSTREF[$FIRST_HOST]}" sudo cat /etc/rancher/k3s/k3s.yaml \

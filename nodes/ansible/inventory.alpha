@@ -1,5 +1,2 @@
 [alpha]
-# IPs vary...
-#192.168.64.2 ansible_user=ubuntu
-#192.168.64.3 ansible_user=ubuntu
-#192.168.64.4 ansible_user=ubuntu
+alpha1 ansible_host=192.168.64.83 ansible_user=ubuntu

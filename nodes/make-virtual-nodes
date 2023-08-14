@@ -4,8 +4,8 @@ set -euo pipefail
 
 CLUSTER_NAME=kube
 BRIDGED_NET=()
-COUNT=3
-GITHUB_ID=""
+COUNT=1
+GITHUB_ID="michael-odell"
 SETUP_NODES=false
 
 while (( $# )) ; do
@@ -41,11 +41,6 @@ while (( $# )) ; do
 
     shift
 done
-
-if [[ ${COUNT} -lt 2 ]] ; then
-    echo "ERROR: make-cluster only supports multi-node clusters."
-    exit 1
-fi
 
 if [[ ! ${CLUSTER_NAME} =~ [a-z][-a-z0-9]* ]] ; then
     echo "ERROR: You must specify a cluster name out of nothing but alphanumerics and hypens."
