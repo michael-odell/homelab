@@ -47,4 +47,4 @@ kind: OnePasswordItem
 metadata:
   name: timescale-new
 spec:
-  itemPath: "vaults/homelab-tmm/items/timescale-new"
+  itemPath: "vaults/homelab-tmm/items/timescale-credentials"
