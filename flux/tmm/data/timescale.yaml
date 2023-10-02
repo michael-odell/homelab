@@ -49,6 +49,7 @@ spec:
         type: LoadBalancer
       replica:
         type: LoadBalancer
+        port: 5433
 
 ---
 apiVersion: onepassword.com/v1
