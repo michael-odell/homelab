@@ -6,7 +6,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: ha
     app.kubernetes.io/name: ha
-    app.kubernetes.io/version: 2023.5.4
+    app.kubernetes.io/version: 2023.8
   name: ha
 spec:
   replicas: 1
@@ -30,7 +30,7 @@ spec:
       - env:
         - name: TZ
           value: America/Denver
-        image: ghcr.io/home-assistant/home-assistant:2023.5.4
+        image: ghcr.io/home-assistant/home-assistant:2023.8
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3
@@ -96,7 +96,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: ha
     app.kubernetes.io/name: ha
-    app.kubernetes.io/version: 2023.5.4
+    app.kubernetes.io/version: 2023.8
   name: ha
 spec:
   ingressClassName: traefik
@@ -123,7 +123,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: ha
     app.kubernetes.io/name: ha
-    app.kubernetes.io/version: 2023.5.4
+    app.kubernetes.io/version: 2023.8
   name: ha
 spec:
   ports:
