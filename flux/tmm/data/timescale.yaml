@@ -48,6 +48,7 @@ spec:
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
+  namespace: data
   name: timescale-credentials
 spec:
   itemPath: "vaults/homelab-tmm/items/timescale-credentials"
