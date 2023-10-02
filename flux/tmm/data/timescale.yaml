@@ -23,6 +23,9 @@ spec:
   interval: 10m0s
   # ref: https://github.com/timescale/helm-charts/blob/main/charts/timescaledb-single/values.yaml
   values:
+    secrets:
+      credentialsSecretName: "timescale-credentials"
+
     persistentVolumes:
       data:
         size: 100Gi
@@ -45,6 +48,6 @@ spec:
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
-  name: timescale-new
+  name: timescale-credentials
 spec:
   itemPath: "vaults/homelab-tmm/items/timescale-credentials"
