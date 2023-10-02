@@ -44,6 +44,12 @@ spec:
         cpus: "1"
         memory: 2GB
 
+    service:
+      primary:
+        type: LoadBalancer
+      replica:
+        type: LoadBalancer
+
 ---
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
