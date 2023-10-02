@@ -40,3 +40,11 @@ spec:
       args:
         cpus: "1"
         memory: 2GB
+
+---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  name: timescale-new
+spec:
+  itemPath: "vaults/homelab-tmm/items/timescale-new"
