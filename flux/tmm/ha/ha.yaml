@@ -1,4 +1,13 @@
 ---
+apiVersion: onepassword.com/v1
+kind: OnePasswordItem
+metadata:
+  namespace: data
+  name: ha-in-timescale
+spec:
+  itemPath: "vaults/homelab-tmm/items/ha-in-timescale"
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -30,6 +39,12 @@ spec:
       - env:
         - name: TZ
           value: America/Denver
+        - name: DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: ha-in-timescale
+              key: db_url
+
         image: ghcr.io/home-assistant/home-assistant:2023.8
         imagePullPolicy: IfNotPresent
         livenessProbe:
