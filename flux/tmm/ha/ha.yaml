@@ -92,7 +92,7 @@ spec:
         - mountPath: /config
           name: config
 
-      dnsPolicy: ClusterFirst
+      dnsPolicy: ClusterFirstWithHostNet
       enableServiceLinks: true
       serviceAccountName: default
 
