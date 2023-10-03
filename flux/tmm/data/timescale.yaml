@@ -24,6 +24,7 @@ spec:
   # ref: https://github.com/timescale/helm-charts/blob/main/charts/timescaledb-single/values.yaml
   values:
     secrets:
+      # NOTE: secret created via 1Password, and some patroni configs live there: https://patroni.readthedocs.io/en/latest/ENVIRONMENT.html#postgresq
       credentialsSecretName: "timescale-credentials"
 
     persistentVolumes:

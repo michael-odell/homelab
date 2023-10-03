@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+DBMATE_DIR=$(dirname "$0")
+
+DB_PASS=$(op read 'op://homelab-tmm/timescale-credentials/PATRONI_SUPERUSER_PASSWORD')
+
+# Make sure the password is URL-safe
+DB_PASS_SANITIZED=$(echo -n "${DB_PASS}" | jq -sRr @uri)
+
+dbmate \
+    --migrations-dir "${DBMATE_DIR}/migrations" \
+    --schema-file "${DBMATE_DIR}/schema.sql" \
+    --url "postgres://postgres:${DB_PASS_SANITIZED}@tmm0.odell.sh:5432/postgres?sslmode=require" \
+    "${@}"
