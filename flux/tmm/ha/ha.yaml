@@ -2,7 +2,7 @@
 apiVersion: onepassword.com/v1
 kind: OnePasswordItem
 metadata:
-  namespace: data
+  namespace: ha
   name: ha-in-timescale
 spec:
   itemPath: "vaults/homelab-tmm/items/ha-in-timescale"
