@@ -111,7 +111,7 @@ metadata:
   labels:
     app.kubernetes.io/instance: ha
     app.kubernetes.io/name: ha
-    app.kubernetes.io/version: 2023.8
+    app.kubernetes.io/version: 2023.11
   name: ha
 spec:
   ingressClassName: traefik
