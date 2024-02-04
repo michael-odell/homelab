@@ -8,3 +8,8 @@ spec:
   url: https://github.com/michael-odell/home-assistant
   ref:
     branch: main
+  ignore: |
+    # exclude all
+    /*
+    # include chart directory
+    !/helm/

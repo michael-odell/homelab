@@ -5,7 +5,7 @@ metadata:
   namespace: ha
 spec:
   interval: 5m0s
-  chart: home-assistant
+  chart: helm
   # TODO change to ChartVersion when/if I start incrementing that
   reconcileStrategy: Revision
   sourceRef:
