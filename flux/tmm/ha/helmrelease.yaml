@@ -10,8 +10,8 @@ spec:
       chart: helm
       sourceRef:
         kind: GitRepository
-        name: podinfo
-        namespace: flux-system
+        name: ha
+        namespace: ha
       interval: 1m
   values: {}
 
