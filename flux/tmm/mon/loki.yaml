@@ -35,7 +35,7 @@ spec:
 
     # loki values: https://github.com/grafana/helm-charts/blob/loki-2.15.2/charts/loki/values.yaml
     loki:
-      replicas: 2
+      replicas: 1
       persistence:
         enabled: true
         storageClassName: openebs-lvm
