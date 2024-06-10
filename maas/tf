@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+export TF_VAR_MAAS_API_KEY="op://homelab/maas/api-key"
+
+exec op run -- terraform "${@}"

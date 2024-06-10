@@ -1,1 +1,4 @@
 /.tags*
+terraform.tfstate*
+.terraform
+.DS_Store
