@@ -20,4 +20,5 @@ ansible:
   package_name: ansible-core
   pull:
     url: "https://github.com/michael-odell/homelab.git"
+    checkout: tf_maas
     playbook_name: nodes/ansible/main.yaml
