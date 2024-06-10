@@ -1,0 +1,4 @@
+- name: Update cluster configuration
+  hosts: localhost
+  roles:
+    - role: k3s
