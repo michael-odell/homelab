@@ -1,4 +1,4 @@
-- name: Update cluster configuration
+- name: Configure node as k3s host
   hosts: localhost
   roles:
     - role: k3s

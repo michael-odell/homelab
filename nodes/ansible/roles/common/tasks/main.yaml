@@ -1,0 +1,10 @@
+- name: "sshd: no password authentication"
+  become: true
+  lineinfile:
+    dest: /etc/ssh/sshd_config
+    backup: yes
+    regexp: '^#?PasswordAuthentication (yes|no)$'
+    line: PasswordAuthentication no
+    state: present
+  notify:
+    - Restart sshd
