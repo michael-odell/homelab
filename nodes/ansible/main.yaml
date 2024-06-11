@@ -2,6 +2,7 @@
   hosts: all
   roles:
     - role: k3s
+    - role: common
 
   tasks:
     - name: Only on physical tmms

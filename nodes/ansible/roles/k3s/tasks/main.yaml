@@ -15,17 +15,6 @@
         #- zsh
         #- smartmontools
 
-- name: "sshd: no password authentication"
-  become: true
-  lineinfile:
-    dest: /etc/ssh/sshd_config
-    backup: yes
-    regexp: '^#?PasswordAuthentication (yes|no)$'
-    line: PasswordAuthentication no
-    state: present
-  notify:
-    - Restart sshd
-
 - name: "systemd-networkd: Don't interefere networks that aren't yours"
   become: true
   community.general.ini_file:

@@ -32,13 +32,25 @@ resource "maas_tag" "hotpotato" {
 #
 #}
 
-resource "maas_instance" "bmcdemo" {
+resource "maas_instance" "bmcdemo-k3s" {
+  count = 2
   allocate_params {
     min_cpu_count = 1
     min_memory    = 2048
   }
   deploy_params {
-    user_data = file("cloud-init-bmcdemo.yaml")
+    user_data = templatefile("cloud-init-bmcdemo.yaml.tftpl", {system_type = "k3s"})
+    distro_series = "noble"
+  }
+}
+
+resource "maas_instance" "bmcdemo-db" {
+  allocate_params {
+    min_cpu_count = 1
+    min_memory    = 2048
+  }
+  deploy_params {
+    user_data = templatefile("cloud-init-bmcdemo.yaml.tftpl", {system_type = "db"})
     distro_series = "noble"
   }
 }
@@ -46,7 +58,9 @@ resource "maas_instance" "bmcdemo" {
 resource "maas_tag" "bmcdemo" {
   name = "bmcdemo"
   machines = [
-    maas_instance.bmcdemo.id
+    maas_instance.bmcdemo-db.id,
+    maas_instance.bmcdemo-k3s[0].id,
+    maas_instance.bmcdemo-k3s[1].id,
   ]
 }
 
