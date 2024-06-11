@@ -1,42 +1,34 @@
-data "maas_subnet" "pxe" {
-  cidr = "192.168.243.0/24"
-}
-
-resource "maas_resource_pool" "pool_test" {
-  name = "pool_test"
-}
-
-#data "maas_machine" "a" {
-#  pxe_mac_address = "58:47:ca:77:25:d4"
-#}
-
-resource "maas_tag" "physical" {
-  name = "physical"
-}
-
-resource "maas_tag" "virtual" {
-  name = "virtual"
-}
-
-resource "maas_tag" "hotpotato" {
-  name = "hotpotato"
-}
-
-#resource "maas_vm_host" "active-foal" {
-#  type = "lxd"
+##data "maas_machine" "a" {
+##  pxe_mac_address = "58:47:ca:77:25:d4"
+##}
 #
-#  machine = "active-foal.maas"
-#  tags = [
-#    "hotpotato"
-#  ]
-#
+#resource "maas_tag" "physical" {
+#  name = "physical"
 #}
-
+#
+#resource "maas_tag" "virtual" {
+#  name = "virtual"
+#}
+#
+#resource "maas_tag" "hotpotato" {
+#  name = "hotpotato"
+#}
+#
+##resource "maas_vm_host" "active-foal" {
+##  type = "lxd"
+##
+##  machine = "active-foal.maas"
+##  tags = [
+##    "hotpotato"
+##  ]
+##
+##}
+#
 resource "maas_instance" "bmcdemo-k3s" {
   count = 2
   allocate_params {
     min_cpu_count = 1
-    min_memory    = 2048
+    min_memory    = 3072
   }
   deploy_params {
     user_data = templatefile("cloud-init-bmcdemo.yaml.tftpl", {system_type = "k3s"})
@@ -47,7 +39,7 @@ resource "maas_instance" "bmcdemo-k3s" {
 resource "maas_instance" "bmcdemo-db" {
   allocate_params {
     min_cpu_count = 1
-    min_memory    = 2048
+    min_memory    = 3072
   }
   deploy_params {
     user_data = templatefile("cloud-init-bmcdemo.yaml.tftpl", {system_type = "db"})
@@ -59,6 +51,21 @@ resource "maas_tag" "bmcdemo" {
   name = "bmcdemo"
   machines = [
     maas_instance.bmcdemo-db.id,
+    maas_instance.bmcdemo-k3s[0].id,
+    maas_instance.bmcdemo-k3s[1].id,
+  ]
+}
+
+resource "maas_tag" "db" {
+  name = "db"
+  machines = [
+    maas_instance.bmcdemo-db.id
+  ]
+}
+
+resource "maas_tag" "k3s" {
+  name = "k3s"
+  machines = [
     maas_instance.bmcdemo-k3s[0].id,
     maas_instance.bmcdemo-k3s[1].id,
   ]
