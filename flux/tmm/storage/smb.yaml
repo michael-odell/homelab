@@ -48,7 +48,7 @@ metadata:
   name: smb
 provisioner: smb.csi.k8s.io
 parameters:
-  source: "//10.243.243.169/kube"
+  source: "//nas.lan/kube"
   # if csi.storage.k8s.io/provisioner-secret is provided, will create a sub directory
   # with PV name under source
   csi.storage.k8s.io/provisioner-secret-name: "smb"
