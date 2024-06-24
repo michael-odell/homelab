@@ -23,7 +23,7 @@ spec:
   interval: 10m0s
   # ref: https://github.com/timescale/helm-charts/blob/main/charts/timescaledb-single/values.yaml
   values:
-    replicateCount: 1
+    replicaCount: 1
 
     secrets:
       # NOTE: secret created via 1Password, and some patroni configs live there: https://patroni.readthedocs.io/en/latest/ENVIRONMENT.html#postgresq
