@@ -51,6 +51,9 @@ resource "maas_network_interface_physical" "ms01-mgmt" {
   machine = maas_machine.ms01[each.key].id
   mac_address = each.value.mgmt_nic
   name = "eth0"
+  lifecycle {
+    ignore_changes = [vlan]
+  }
 }
 
 resource "maas_network_interface_link" "ms01-mgmt" {
@@ -66,6 +69,9 @@ resource "maas_network_interface_physical" "ms01-data" {
   machine = maas_machine.ms01[each.key].id
   mac_address = each.value.data_nic
   name = "eth1"
+  lifecycle {
+    ignore_changes = [vlan]
+  }
 }
 
 resource "maas_network_interface_link" "ms01-data" {
@@ -92,6 +98,9 @@ resource "maas_network_interface_physical" "hpg2-mgmt" {
   machine = maas_machine.hpg2[each.key].id
   mac_address = each.value.mgmt_nic
   name = "eth0"
+  lifecycle {
+    ignore_changes = [vlan]
+  }
 }
 
 resource "maas_network_interface_link" "hpg2-mgmt" {
@@ -107,6 +116,9 @@ resource "maas_network_interface_physical" "hpg2-data" {
   machine = maas_machine.hpg2[each.key].id
   mac_address = each.value.data_nic
   name = "eth1"
+  lifecycle {
+    ignore_changes = [vlan]
+  }
 }
 
 resource "maas_network_interface_link" "hpg2-data" {
@@ -115,6 +127,10 @@ resource "maas_network_interface_link" "hpg2-data" {
   network_interface = maas_network_interface_physical.hpg2-data[each.key].id
   subnet = data.maas_subnet.data.id
   mode = "DHCP"
+}
+
+resource "maas_instance" "hpg2" {
+  for_each = local.hpg2
 }
 
 ##data "maas_machine" "a" {
