@@ -1,0 +1,6 @@
+- name: Local initialization via cloud-init
+  hosts: localhost
+  roles:
+    - role: ../roles/common
+    - role: ../roles/michael_interactive
+
