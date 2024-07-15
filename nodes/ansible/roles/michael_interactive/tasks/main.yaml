@@ -1,0 +1,11 @@
+- name: install tools
+  become: true
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+    pkg:
+      - ack
+      - git
+      - tmux
+      - jq
+      - zsh
