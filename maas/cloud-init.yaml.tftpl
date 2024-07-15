@@ -5,20 +5,22 @@ write_files:
       # YO LOOK AT ME
     path: /YO_FILE
 
-package_update: true
-package_upgrade: true
-
 users:
   - default
   - name: michael
-    groups: sudo
     ssh_import_id:
       - gh:michael-odell
+    groups: sudo
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+
+package_update: true
+package_upgrade: true
 
 ansible:
   install_method: distro
   package_name: ansible-core
   pull:
     url: https://github.com/michael-odell/homelab.git
-    checkout: tf_maas
-    playbook_name: nodes/ansible/local-cloud-init.yaml
+    checkout: ms01
+    playbook_name: nodes/ansible/playbooks/cloud-init.yaml
