@@ -1,0 +1,2 @@
+[ms01-a]
+ms01-a ansible_host=10.243.101.174 ansible_user=michael
