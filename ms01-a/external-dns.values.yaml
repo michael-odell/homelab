@@ -1,0 +1,26 @@
+# ref: https://github.com/kubernetes-sigs/external-dns/blob/master/charts/external-dns/values.yaml
+policy: sync
+txtPrefix: externaldns-
+txtOwnerId: ms01-a
+provider: aws
+
+domainFilters:
+  - ms01-a.odell.sh
+
+serviceMonitor:
+  enabled: false
+
+env:
+  - name: AWS_DEFAULT_REGION
+    value: us-west-2
+  - name: AWS_ACCESS_KEY
+    valueFrom:
+      secretKeyRef:
+        name: certbot-aws
+        key: access_key
+  - name: AWS_SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: certbot-aws
+        key: secret_key
+
