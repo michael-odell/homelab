@@ -17,3 +17,17 @@ helm upgrade --install \
     external-dns external-dns \
     --namespace network \
     --values external-dns.values.yaml
+
+kubectl apply -f secret-grafana-michael.yaml
+
+helm upgrade --install \
+    --repo https://prometheus-community.github.io/helm-charts \
+    mon kube-prometheus-stack \
+    --namespace mon \
+    --values kube-prometheus-stack.values.yaml
+
+#helm upgrade --install \
+#    --repo https://grafana.github.io/helm-charts \
+#    loki loki \
+#    --namespace mon \
+#    --values loki.values.yaml

@@ -1,0 +1,224 @@
+# Overall reference: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
+alertmanager:
+  #ingress:
+  #  annotations:
+  #    cert-manager.io/cluster-issuer: letsencrypt-dns
+  #    external-dns.alpha.kubernetes.io/target: k8s.odell.sh
+  #  enabled: true
+  #  ingressClassName: traefik
+  #  hosts:
+  #  - tmm0.odell.sh
+  #  paths:
+  #  - /alertmanager
+  #  tls:
+  #  - hosts:
+  #    - tmm0.odell.sh
+  #    secretName: tmm0-tls
+
+  config:
+    # This suggests I could put the following in a secret:
+    #   https://github.com/prometheus-community/helm-charts/issues/1020#issuecomment-945107151
+    global:
+      resolve_timeout: 1m
+    route:
+      group_by:
+      - alertname
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 24h
+      receiver: "null"
+      routes:
+      - receiver: null
+        matchers:
+        - alertname=Watchdog
+        continue: false
+      - receiver: null
+        matchers:
+        - alertname=InfoInhibitor
+        continue: false
+      - receiver: pushover-critical
+        matchers:
+        - severity=critical
+      - receiver: pushover-normal
+        matchers: null
+    receivers:
+    - name: "null"
+    #- name: pushover-normal
+    #  # ref: https://prometheus.io/docs/alerting/latest/configuration/#pushover_config
+    #  pushover_configs:
+    #  - send_resolved: true
+    #    user_key: ujj1XsCZpThn9NVgs5HD1Zw8L1JZrj
+    #    token: atumrqdfna2zw5agnncbtixfyn89mh
+    #    # normal -- ref https://pushover.net/api#priority
+    #    priority: 0
+    #    url: http://tmm0.odell.sh/prometheus/alerts
+
+    #- name: pushover-critical
+    #  # ref: https://prometheus.io/docs/alerting/latest/configuration/#pushover_config
+    #  pushover_configs:
+    #  - send_resolved: true
+    #    user_key: ujj1XsCZpThn9NVgs5HD1Zw8L1JZrj
+    #    token: atumrqdfna2zw5agnncbtixfyn89mh
+    #    # normal -- ref https://pushover.net/api#priority
+    #    priority: 0
+    #    url: http://tmm0.odell.sh/prometheus/alerts
+
+  #alertmanagerSpec:
+  #  externalUrl: "http://tmm0.odell.sh/alertmanager/"
+  #  routePrefix: "/alertmanager/"
+
+defaultRules:
+  rules:
+    kubeScheduler: false
+    etcd: false
+
+  disabled:
+    # Don't need this for now...
+    Watchdog: true
+
+    KubeAggregatedAPIDown: true
+
+# ref: https://github.com/grafana/helm-charts/blob/main/charts/grafana/values.yaml
+grafana:
+  replicas: 1
+  enabled: true
+  serviceMonitor:
+    enabled: true
+
+  #ingress:
+  #  annotations:
+  #    cert-manager.io/cluster-issuer: letsencrypt-dns
+  #    external-dns.alpha.kubernetes.io/target: k8s.odell.sh
+  #  enabled: true
+  #  ingressClassName: public
+  #  pathType: Prefix
+  #  hosts:
+  #  - tmm0.odell.sh
+  #  paths:
+  #    - /grafana
+  #  tls:
+  #  - hosts:
+  #    - tmm0.odell.sh
+  #    secretName: tmm0-tls
+
+
+  admin:
+    existingSecret: "grafana-michael"
+    userKey: username
+    passwordKey: password
+
+  # Use when persistent volume is enabled
+  deploymentStrategy:
+    type: Recreate
+  #persistence:
+  #  enabled: true
+  #  type: pvc
+  #  storageClassName: nfs
+  #  accessModes:
+  #    - ReadWriteOnce
+  #  size: 10Gi
+
+  grafana.ini:
+    server:
+      #domain: tmm0.odell.sh
+      #root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+      #serve_from_sub_path: true
+      enable_gzip: true
+
+    analytics:
+      check_for_updates: false
+
+  sidecar:
+    dashboards:
+      searchNamespace: ALL
+      provider:
+        allowUiUpdates: true
+
+
+kubeControllerManager:
+  enabled: false
+
+#kubeScheduler:
+#  enabled: true
+#  endpoints:
+#    - 10.243.243.109
+#    - 10.243.243.118
+#    - 10.243.243.88
+#    - 10.243.243.64
+#  service:
+#    enabled: true
+#  serviceMonitor:
+#    https: true
+#    insecureSkipVerify: true
+
+#kubeProxy:
+#  enabled: true
+#  endpoints:
+#    - 10.243.243.109
+#    - 10.243.243.118
+#    - 10.243.243.88
+#    - 10.243.243.64
+#  service:
+#    port: 10249
+
+
+
+# ref: https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-node-exporter/values.yaml
+prometheus-node-exporter:
+  prometheus:
+    monitor:
+      enabled: true
+
+prometheus:
+  #ingress:
+  #  annotations:
+  #    cert-manager.io/cluster-issuer: letsencrypt-dns
+  #    external-dns.alpha.kubernetes.io/target: k8s.odell.sh
+  #  enabled: true
+  #  ingressClassName: public
+  #  hosts:
+  #  - tmm0.odell.sh
+  #  paths:
+  #  - /prometheus
+  #  tls:
+  #  - hosts:
+  #    - tmm0.odell.sh
+  #    secretName: tmm0-tls
+
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+
+    replicas: 1
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "2300Mi"
+      limits:
+        cpu: "2"
+        memory: "4Gi"
+
+    #externalUrl: "http://tmm0.odell.sh/prometheus/"
+    #routePrefix: "/prometheus/"
+
+    #retentionSize: 90GB
+    #walCompression: true
+
+    #storageSpec:
+    #  volumeClaimTemplate:
+    #    spec:
+    #      accessModes:
+    #      - ReadWriteOnce
+    #      resources:
+    #        requests:
+    #          storage: 100Gi
+    #      storageClassName: openebs-lvm
+
+  # Will surely need some stuff here...
+  additionalScrapeConfigs: []
+
+prometheusOperator:
+  kubeletService:
+    enabled: true
+
