@@ -2,7 +2,8 @@
 policy: sync
 txtPrefix: externaldns-
 txtOwnerId: ms01-a
-provider: aws
+provider:
+  name: aws
 
 domainFilters:
   - ms01-a.odell.sh
