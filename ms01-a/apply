@@ -4,22 +4,25 @@ set -euo pipefail
 
 kubectl apply -f namespaces.yaml
 
-helm upgrade --install \
-    --repo https://1password.github.io/connect-helm-charts \
-    connect connect \
-    --namespace secrets \
-    --values 1password-connect.values.yaml
-
-kubectl apply -f secret-certbot-aws.yaml
-
-helm upgrade --install \
-    --repo https://kubernetes-sigs.github.io/external-dns/ \
-    external-dns external-dns \
-    --namespace network \
-    --values external-dns.values.yaml
+#green "Installing 1password-connect..."
+#helm upgrade --install \
+#    --repo https://1password.github.io/connect-helm-charts \
+#    connect connect \
+#    --namespace secrets \
+#    --values 1password-connect.values.yaml
+#
+#kubectl apply -f secret-certbot-aws.yaml
+#
+#green "Installing external-dns..."
+#helm upgrade --install \
+#    --repo https://kubernetes-sigs.github.io/external-dns/ \
+#    external-dns external-dns \
+#    --namespace network \
+#    --values external-dns.values.yaml
 
 kubectl apply -f secret-grafana-michael.yaml
 
+green "Installing kube-prometheus-stack..."
 helm upgrade --install \
     --repo https://prometheus-community.github.io/helm-charts \
     mon kube-prometheus-stack \

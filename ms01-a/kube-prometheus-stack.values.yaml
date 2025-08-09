@@ -1,19 +1,22 @@
 # Overall reference: https://github.com/prometheus-community/helm-charts/blob/main/charts/kube-prometheus-stack/values.yaml
 alertmanager:
-  #ingress:
-  #  annotations:
-  #    cert-manager.io/cluster-issuer: letsencrypt-dns
-  #    external-dns.alpha.kubernetes.io/target: k8s.odell.sh
-  #  enabled: true
-  #  ingressClassName: traefik
-  #  hosts:
-  #  - tmm0.odell.sh
-  #  paths:
-  #  - /alertmanager
-  #  tls:
-  #  - hosts:
-  #    - tmm0.odell.sh
-  #    secretName: tmm0-tls
+  enabled: true
+
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+      - mon.odell.sh
+    pathType: Prefix
+    paths:
+      - /alertmanager
+    #annotations:
+    #  cert-manager.io/cluster-issuer: letsencrypt-dns
+    #  external-dns.alpha.kubernetes.io/target: k8s.odell.sh
+    #tls:
+    #- hosts:
+    #  - tmm0.odell.sh
+    #  secretName: tmm0-tls
 
   config:
     # This suggests I could put the following in a secret:
@@ -36,11 +39,11 @@ alertmanager:
         matchers:
         - alertname=InfoInhibitor
         continue: false
-      - receiver: pushover-critical
-        matchers:
-        - severity=critical
-      - receiver: pushover-normal
-        matchers: null
+      #- receiver: pushover-critical
+      #  matchers:
+      #  - severity=critical
+      #- receiver: pushover-normal
+      #  matchers: null
     receivers:
     - name: "null"
     #- name: pushover-normal
@@ -63,13 +66,14 @@ alertmanager:
     #    priority: 0
     #    url: http://tmm0.odell.sh/prometheus/alerts
 
-  #alertmanagerSpec:
-  #  externalUrl: "http://tmm0.odell.sh/alertmanager/"
-  #  routePrefix: "/alertmanager/"
+  alertmanagerSpec:
+    externalUrl: "http://mon.odell.sh/alertmanager/"
+    routePrefix: "/alertmanager/"
 
 defaultRules:
   rules:
     kubeScheduler: false
+    kubeProxy: false
     etcd: false
 
   disabled:
@@ -84,22 +88,24 @@ grafana:
   enabled: true
   serviceMonitor:
     enabled: true
+    path: /grafana/metrics
+    port: 3000
 
-  #ingress:
-  #  annotations:
-  #    cert-manager.io/cluster-issuer: letsencrypt-dns
-  #    external-dns.alpha.kubernetes.io/target: k8s.odell.sh
-  #  enabled: true
-  #  ingressClassName: public
-  #  pathType: Prefix
-  #  hosts:
-  #  - tmm0.odell.sh
-  #  paths:
-  #    - /grafana
-  #  tls:
-  #  - hosts:
-  #    - tmm0.odell.sh
-  #    secretName: tmm0-tls
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    pathType: Prefix
+    hosts:
+    - mon.odell.sh
+    paths:
+      - /grafana
+    #annotations:
+    #  cert-manager.io/cluster-issuer: letsencrypt-dns
+    #  external-dns.alpha.kubernetes.io/target: k8s.odell.sh
+    #tls:
+    #- hosts:
+    #  - tmm0.odell.sh
+    #  secretName: tmm0-tls
 
 
   admin:
@@ -110,19 +116,20 @@ grafana:
   # Use when persistent volume is enabled
   deploymentStrategy:
     type: Recreate
-  #persistence:
-  #  enabled: true
-  #  type: pvc
-  #  storageClassName: nfs
-  #  accessModes:
-  #    - ReadWriteOnce
-  #  size: 10Gi
+
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: local-path
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
 
   grafana.ini:
     server:
-      #domain: tmm0.odell.sh
-      #root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
-      #serve_from_sub_path: true
+      domain: mon.odell.sh
+      root_url: "%(protocol)s://%(domain)s:%(http_port)s/grafana/"
+      serve_from_sub_path: true
       enable_gzip: true
 
     analytics:
@@ -138,30 +145,11 @@ grafana:
 kubeControllerManager:
   enabled: false
 
-#kubeScheduler:
-#  enabled: true
-#  endpoints:
-#    - 10.243.243.109
-#    - 10.243.243.118
-#    - 10.243.243.88
-#    - 10.243.243.64
-#  service:
-#    enabled: true
-#  serviceMonitor:
-#    https: true
-#    insecureSkipVerify: true
+kubeScheduler:
+  enabled: false
 
-#kubeProxy:
-#  enabled: true
-#  endpoints:
-#    - 10.243.243.109
-#    - 10.243.243.118
-#    - 10.243.243.88
-#    - 10.243.243.64
-#  service:
-#    port: 10249
-
-
+kubeProxy:
+  enabled: false
 
 # ref: https://github.com/prometheus-community/helm-charts/blob/main/charts/prometheus-node-exporter/values.yaml
 prometheus-node-exporter:
@@ -170,20 +158,20 @@ prometheus-node-exporter:
       enabled: true
 
 prometheus:
-  #ingress:
-  #  annotations:
-  #    cert-manager.io/cluster-issuer: letsencrypt-dns
-  #    external-dns.alpha.kubernetes.io/target: k8s.odell.sh
-  #  enabled: true
-  #  ingressClassName: public
-  #  hosts:
-  #  - tmm0.odell.sh
-  #  paths:
-  #  - /prometheus
-  #  tls:
-  #  - hosts:
-  #    - tmm0.odell.sh
-  #    secretName: tmm0-tls
+  ingress:
+    enabled: true
+    ingressClassName: traefik
+    hosts:
+    - mon.odell.sh
+    paths:
+    - /prometheus
+    #tls:
+    #- hosts:
+    #  - tmm0.odell.sh
+    #  secretName: tmm0-tls
+    #annotations:
+    #  cert-manager.io/cluster-issuer: letsencrypt-dns
+    #  external-dns.alpha.kubernetes.io/target: k8s.odell.sh
 
   prometheusSpec:
     podMonitorSelectorNilUsesHelmValues: false
@@ -194,26 +182,26 @@ prometheus:
     resources:
       requests:
         cpu: "500m"
-        memory: "2300Mi"
+        memory: "4Gi"
       limits:
         cpu: "2"
         memory: "4Gi"
 
-    #externalUrl: "http://tmm0.odell.sh/prometheus/"
-    #routePrefix: "/prometheus/"
+    externalUrl: "http://mon.odell.sh/prometheus/"
+    routePrefix: "/prometheus/"
 
-    #retentionSize: 90GB
-    #walCompression: true
+    retentionSize: 90GB
+    walCompression: true
 
-    #storageSpec:
-    #  volumeClaimTemplate:
-    #    spec:
-    #      accessModes:
-    #      - ReadWriteOnce
-    #      resources:
-    #        requests:
-    #          storage: 100Gi
-    #      storageClassName: openebs-lvm
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+          - ReadWriteOnce
+          resources:
+            requests:
+              storage: 100Gi
+          storageClassName: local-path
 
   # Will surely need some stuff here...
   additionalScrapeConfigs: []
