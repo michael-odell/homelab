@@ -1,0 +1,31 @@
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-dns
+spec:
+  acme:
+    email: michael@theodells.us
+
+    # ONE OR THE OTHER OF THESE TWO -- STAGING V PRODUCTION servers.  When I switch, I tend to switch
+    # names, too.
+    #
+    server: https://acme-v02.api.letsencrypt.org/directory
+    privateKeySecretRef:
+      name: letsencrypt-pk
+    #server: https://acme-staging-v02.api.letsencrypt.org/directory
+    #privateKeySecretRef:
+    #  name: letsencrypt-staging-pk
+
+    solvers:
+    - selector:
+        dnsZones:
+          - "odell.sh"
+      dns01:
+        route53:
+          region: us-west-2
+          accessKeyIDSecretRef:
+            name: certbot-aws
+            key: access_key
+          secretAccessKeySecretRef:
+            name: certbot-aws
+            key: secret_key

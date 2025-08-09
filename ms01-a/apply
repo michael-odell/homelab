@@ -20,6 +20,15 @@ helm upgrade --install \
     --namespace network \
     --values external-dns.values.yaml
 
+green "Installing cert-manager..."
+helm upgrade --install \
+    --repo https://charts.jetstack.io  \
+    cert-manager cert-manager \
+    --namespace network \
+    --values cert-manager.values.yaml
+
+kubectl apply -f cert-issuer-odell-sh.yaml
+
 kubectl apply -f secret-grafana-michael.yaml
 
 green "Installing kube-prometheus-stack..."

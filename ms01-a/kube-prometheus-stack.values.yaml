@@ -3,6 +3,8 @@ alertmanager:
   enabled: true
 
   ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-dns
     enabled: true
     ingressClassName: traefik
     hosts:
@@ -10,13 +12,10 @@ alertmanager:
     pathType: Prefix
     paths:
       - /alertmanager
-    #annotations:
-    #  cert-manager.io/cluster-issuer: letsencrypt-dns
-    #  external-dns.alpha.kubernetes.io/target: k8s.odell.sh
-    #tls:
-    #- hosts:
-    #  - tmm0.odell.sh
-    #  secretName: tmm0-tls
+    tls:
+    - hosts:
+      - mon.odell.sh
+      secretName: mon-odell-sh-tls
 
   config:
     # This suggests I could put the following in a secret:
@@ -67,7 +66,7 @@ alertmanager:
     #    url: http://tmm0.odell.sh/prometheus/alerts
 
   alertmanagerSpec:
-    externalUrl: "http://mon.odell.sh/alertmanager/"
+    externalUrl: "https://mon.odell.sh/alertmanager/"
     routePrefix: "/alertmanager/"
 
 defaultRules:
@@ -92,6 +91,8 @@ grafana:
     port: 3000
 
   ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-dns
     enabled: true
     ingressClassName: traefik
     pathType: Prefix
@@ -99,13 +100,10 @@ grafana:
     - mon.odell.sh
     paths:
       - /grafana
-    #annotations:
-    #  cert-manager.io/cluster-issuer: letsencrypt-dns
-    #  external-dns.alpha.kubernetes.io/target: k8s.odell.sh
-    #tls:
-    #- hosts:
-    #  - tmm0.odell.sh
-    #  secretName: tmm0-tls
+    tls:
+    - hosts:
+      - mon.odell.sh
+      secretName: mon-odell-sh-tls
 
 
   admin:
@@ -159,19 +157,18 @@ prometheus-node-exporter:
 
 prometheus:
   ingress:
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-dns
     enabled: true
     ingressClassName: traefik
     hosts:
     - mon.odell.sh
     paths:
     - /prometheus
-    #tls:
-    #- hosts:
-    #  - tmm0.odell.sh
-    #  secretName: tmm0-tls
-    #annotations:
-    #  cert-manager.io/cluster-issuer: letsencrypt-dns
-    #  external-dns.alpha.kubernetes.io/target: k8s.odell.sh
+    tls:
+    - hosts:
+      - mon.odell.sh
+      secretName: mon-odell-sh-tls
 
   prometheusSpec:
     podMonitorSelectorNilUsesHelmValues: false
@@ -187,7 +184,7 @@ prometheus:
         cpu: "2"
         memory: "4Gi"
 
-    externalUrl: "http://mon.odell.sh/prometheus/"
+    externalUrl: "https://mon.odell.sh/prometheus/"
     routePrefix: "/prometheus/"
 
     retentionSize: 90GB
